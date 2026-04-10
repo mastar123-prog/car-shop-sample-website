@@ -2,165 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Master Car Accessories - Home</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="icon" href="wheel.png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: "Playwrite US Modern", serif;
-            background-image: url('futuristic-black-glowing-car-desktop-wallpaper-preview.jpg');
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: cover;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        h1, h3 {
-            color: whitesmoke;
-            background-color: rgba(30, 143, 255, 0.3);
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        p {
-            color: whitesmoke;
-            background-color: rgba(160, 0, 0, 0.3);
-            padding: 15px;
-            line-height: 1.6;
-            border-radius: 8px;
-        }
-
-        /* Navbar */
-        .navbar {
-            background-color: #333;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .navbar ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-        }
-
-        .navbar a {
-            display: block;
-            color: white;
-            padding: 14px 16px;
-            text-decoration: none;
-        }
-
-        .navbar a:hover {
-            background-color: #0033ff;
-        }
-
-        /* Side-by-side layout */
-        .hero {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .hero-text {
-            flex: 1;
-        }
-
-        .hero-video {
-            flex: 1;
-        }
-
-        /* Responsive video */
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-        }
-
-        .video-container iframe {
-            position: absolute;
-            width: 100%;
-            height: 75%;
-            border-radius: 10px;
-        }
-
-        /* Button */
-        .cta-button {
-            display: inline-block;
-            background-color: #0033ff;
-            color: white;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .cta-button:hover {
-            background-color: #001bb5;
-        }
-
-        /* Mobile fix */
-        @media (max-width: 768px) {
-            .hero {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 </head>
-
 <body>
-
     <nav class="navbar">
         <ul>
-            <li><a href="index.htm">Home</a></li>
-            <li><a href="gear.htm">Prices & Gear</a></li>
-            <li><a href="shipping.htm">Shipping</a></li>
-            <li><a href="works.htm">How It Works</a></li>
-            <li><a href="tech.htm">Tech Gear</a></li>
-            <li><a href="contact.htm">Contact</a></li>
-            <li><a href="order.htm">Order</a></li>
+            <li><a href="index.htm"><ion-icon name="home-outline"></ion-icon> Home</a></li>
+            <li><a href="gear.htm"><ion-icon name="pricetags-outline"></ion-icon> Prices</a></li>
+            <li><a href="shipping.htm"><ion-icon name="rocket-outline"></ion-icon> Shipping</a></li>
+            <li><a href="works.htm"><ion-icon name="construct-outline"></ion-icon> How It Works</a></li>
+            <li><a href="tech.htm"><ion-icon name="flash-outline"></ion-icon> Tech Gear</a></li>
+            <li><a href="contact.htm"><ion-icon name="mail-outline"></ion-icon> Contact</a></li>
+            <li><a href="user.htm"><ion-icon name="person-circle-outline"></ion-icon> Log In</a></li>
+            <li><a href="register.htm"><ion-icon name="person-add-outline"></ion-icon> Register</a></li>
+            <li><a href="order.htm"><ion-icon name="cart-outline"></ion-icon> Order</a></li>
+            <li><a href="Get-a-new-password.htm"><ion-icon name="key-outline"></ion-icon> Reset</a></li>
         </ul>
     </nav>
 
     <div class="container">
-        <h1>Master Car Accessories</h1>
-
-        <div class="hero">
-            <!-- TEXT LEFT -->
-            <div class="hero-text">
-                <p>
-                    Master Car Accessories is a modern, customer-focused automotive brand dedicated to quality, innovation, and style.
-                    We provide top-tier gear designed to enhance your driving experience—from performance upgrades to cutting-edge tech.
-                    Our mission is simple: make your car smarter, cooler, and more powerful.
-                </p>
-
-                <a href="gear.htm" class="cta-button">View Accessories</a>
+        <div class="card">
+            <div class="title-box">
+                <h1>Master Car Accessories</h1>
             </div>
 
-            <!-- VIDEO RIGHT -->
-            <div class="hero-video">
-                <div class="video-container">
-                    <iframe src="https://www.youtube.com/embed/xED8hXn1hso" allowfullscreen></iframe>
+            <div class="grid">
+                <div class="item">
+                    <h3>Built for Style and Performance</h3>
+                    <p>
+                        Master Car Accessories is a modern automotive brand focused on quality,
+                        innovation, and clean design. We offer upgrades that make your car
+                        smarter, sharper, and more enjoyable to drive.
+                    </p>
+                    <p>
+                        From practical interior accessories to premium tech gear, every product
+                        is chosen to improve comfort, convenience, and road-ready confidence.
+                    </p>
+                    <p>
+                        <a href="gear.htm">Browse our price list</a> or
+                        <a href="order.htm">place an order</a> when you are ready.
+                    </p>
+                </div>
+
+                <div class="item">
+                    <h3>Featured Video</h3>
+                    <div class="video-container">
+                        <iframe
+                            src="https://www.youtube.com/embed/xED8hXn1hso"
+                            title="Master Car Accessories Promo"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-
 </body>
 </html>
