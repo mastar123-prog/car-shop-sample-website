@@ -23,7 +23,7 @@ async function login() {
     const pass = document.getElementById('loginPass').value.trim();
     const rememberMe = document.getElementById('rememberMe').checked;
 
-    // Check Local Storage (New registrations)
+    // First: Check Local Storage fallback
     const localUser = localStorage.getItem(email);
     if (localUser) {
         const user = JSON.parse(localUser);
@@ -32,32 +32,34 @@ async function login() {
         }
     }
 
-    // Check DB.csv (Database file)
+    // Second: Talk directly to your Python Flask backend API
     try {
-        const response = await fetch("DB.csv");
-        if (!response.ok) throw new Error("DB.csv not found");
-        const text = await response.text();
-        const rows = text.split("\n").slice(1).filter(row => row.trim() !== "");
+        const response = await fetch("http://localhost:5000/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: email,
+                password: pass
+            })
+        });
 
-        for (const row of rows) {
-            const columns = row.split(",");
-            const csvName = columns[1]?.trim();
-            const csvEmail = columns[2]?.trim().toLowerCase();
-            const csvPass = columns[3]?.trim();
+        const result = await response.json();
 
-            if (email === csvEmail && pass === csvPass) {
-                return startSession(csvName, rememberMe);
-            }
+        if (response.ok) {
+            return startSession(result.name || result.user, rememberMe);
+        } else {
+            alert(result.error || "Invalid email or password.");
+            return;
         }
     } catch (error) {
-        console.error("Database error:", error);
+        console.error("Database connection error:", error);
+        alert("Cannot connect to login server. Is your Python backend running?");
     }
-
-    alert("Invalid email or password.");
 }
 
 function startSession(userName, remember) {
-    // "Remember Me" uses localStorage; otherwise use sessionStorage
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem("isLoggedIn", "true");
     storage.setItem("userName", userName);
@@ -91,32 +93,40 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- 5. REGISTRATION LOGIC ---
-const regForm = document.getElementById("registerForm");
-if (regForm) {
-    regForm.addEventListener("submit", function (e) {
+// --- 5. REGISTRATION FORM LOGIC (WITH VALIDATIONS) ---
+const registerForm = document.getElementById("registerForm");
+
+if (registerForm) {
+    registerForm.addEventListener("submit", async function (e) {
         e.preventDefault();
-        const name = document.getElementById("regName").value;
+        
+        // Gather values
+        const name = document.getElementById("regName").value.trim();
         const email = document.getElementById("regEmail").value.trim().toLowerCase();
         const pass = document.getElementById("regPass").value;
         const confPass = document.getElementById("regConfPass").value;
-        const userAns = parseInt(document.getElementById("captchaInput").value, 10);
+        const msg = document.getElementById("msg");
 
-        if (pass.length < 8 || !/\d/.test(pass) || !/[!@#$%^&*]/.test(pass)) {
-            alert("Password must be 8+ characters with a number and special char.");
-            return;
-        }
-        if (pass !== confPass) {
-            alert("Passwords do not match!");
-            return;
-        }
-        if (userAns !== correctSum) {
-            alert("Wrong Captcha!");
+        // Strict Email Format Validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            if (msg) {
+                msg.style.color = "orange";
+                msg.innerText = "Please enter a valid email address.";
+            }
             return;
         }
 
-        localStorage.setItem(email, JSON.stringify({ name, email, pass }));
-        alert("Registration Successful! Please Log In.");
-        window.location.href = "user.htm";
-    });
-}
+        // Password Minimum & Maximum Character Limit Checks
+        if (pass.length < 8) {
+            if (msg) {
+                msg.style.color = "orange";
+                msg.innerText = "Password must be at least 8 characters.";
+            }
+            return;
+        }
+        if (pass.length > 32) {
+            if (msg) {
+                msg.style.color = "orange";
+                msg.innerText = "Password cannot exceed 32 characters.";
+            }

@@ -65,8 +65,9 @@
             const btn = document.getElementById('submitBtn');
             const text = document.getElementById('btnText');
             const spinner = document.getElementById('spinner');
-            const emailValue = document.getElementById('loginEmail').value;
+            const emailValue = document.getElementById('loginEmail').value.trim();
             const passValue = document.getElementById('loginPass').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
 
             btn.disabled = true;
             text.textContent = "Checking...";
@@ -78,20 +79,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         email: emailValue, 
-                        password: passValue,
-                        name: "", 
-                        username: emailValue 
+                        password: passValue
                     })
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    alert("Welcome back!");
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem("isLoggedIn", "true");
+                    storage.setItem("userName", data.name || data.user || emailValue);
+                    alert("Welcome back, " + (data.name || data.user || emailValue) + "!");
                     window.location.href = "index.htm";
                 } else {
                     alert(data.error || "Login failed");
                 }
             } catch (err) {
-                alert("Server connection failed.");
+                alert("CSV backend connection failed. Start app.py and try again.");
             } finally {
                 btn.disabled = false;
                 text.textContent = "Sign In";

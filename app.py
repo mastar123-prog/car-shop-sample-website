@@ -1,59 +1,93 @@
-from flask import Flask, request, jsonify
+from csv import DictReader, DictWriter
+from pathlib import Path
+
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-import mysql.connector
+
 
 app = Flask(__name__)
 CORS(app)
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="1234",
-        database="mca"
-    )
+DB_PATH = Path(__file__).with_name("DB.csv")
+FIELDNAMES = ["username", "name", "email", "password"]
 
-@app.route('/register', methods=['POST'])
+
+def ensure_db_exists():
+    if not DB_PATH.exists():
+        with DB_PATH.open("w", newline="", encoding="utf-8") as file:
+            writer = DictWriter(file, fieldnames=FIELDNAMES)
+            writer.writeheader()
+
+
+def load_users():
+    ensure_db_exists()
+    with DB_PATH.open(newline="", encoding="utf-8") as file:
+        return list(DictReader(file))
+
+
+def save_user(user):
+    ensure_db_exists()
+    with DB_PATH.open("a", newline="", encoding="utf-8") as file:
+        writer = DictWriter(file, fieldnames=FIELDNAMES)
+        writer.writerow(user)
+
+
+def normalize(value):
+    return (value or "").strip().lower()
+
+
+@app.route("/register", methods=["POST"])
 def register():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-    name = data.get('name')
-    username = data.get('username')
-    
-    if not email or not password or not name or not username:
-        return jsonify({"error": "Missing fields"}), 400
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("INSERT INTO users (email, Password_OR_Pin, name, username) VALUES (%s, %s, %s, %s)", (email, password, name, username))
-        conn.commit()
-        return jsonify({"message": "Registration successful!"}), 201
-    except mysql.connector.Error as err:
-        return jsonify({"error": str(err)}), 500
-    finally:
-        cursor.close()
-        conn.close()
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = normalize(data.get("email"))
+    password = data.get("password") or ""
+    username = (data.get("username") or email.split("@")[0]).strip()
 
-@app.route('/login', methods=['POST'])
+    if not name or not email or not password:
+        return jsonify({"error": "Please provide name, email, and password"}), 400
+
+    users = load_users()
+    username_exists = any(normalize(user.get("username")) == normalize(username) for user in users)
+    email_exists = any(normalize(user.get("email")) == email for user in users)
+
+    if username_exists or email_exists:
+        return jsonify({"error": "An account with that email or username already exists"}), 409
+
+    save_user({
+        "username": username,
+        "name": name,
+        "email": email,
+        "password": password,
+    })
+
+    return jsonify({"message": "Registration successful!"}), 201
+
+
+@app.route("/login", methods=["POST"])
 def login():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-    name = data.get('name')
-    username = data.get('username')
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE username = %s AND Password_OR_Pin = %s AND email = %s AND name = %s", (username, password, email, name))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
+    data = request.get_json(silent=True) or {}
+    login_id = normalize(data.get("email") or data.get("username"))
+    password = data.get("password") or ""
 
-    if user:
-        return jsonify({"message": "Login successful!", "user": username}), 200
-    return jsonify({"error": "Invalid credentials"}), 401
+    if not login_id or not password:
+        return jsonify({"error": "Please provide email/username and password"}), 400
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    for user in load_users():
+        email_matches = normalize(user.get("email")) == login_id
+        username_matches = normalize(user.get("username")) == login_id
+        password_matches = (user.get("password") or "").strip() == password
+
+        if (email_matches or username_matches) and password_matches:
+            return jsonify({
+                "message": "Login successful!",
+                "user": user.get("username", ""),
+                "name": user.get("name", ""),
+                "email": user.get("email", ""),
+            }), 200
+
+    return jsonify({"error": "Invalid email/username or password"}), 401
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)

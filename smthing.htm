@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tower of Doom</title>
+    <title>Scout Camp Challenge</title>
     <style>
         :root {
-            --bg: #0f172a;
-            --panel: #1e293b;
-            --border: #334155;
-            --accent: #ff6600;
-            --green: #00ffcc;
-            --red: #ff3333;
+            --bg: #0f2017;
+            --panel: #193326;
+            --border: #47624f;
+            --accent: #f2c14e;
+            --green: #76e4a6;
+            --red: #e85d5d;
             --text: #f8fafc;
-            --strength: #ef4444;
-            --wisdom: #3b82f6;
-            --charisma: #f59e0b;
+            --strength: #a6423f;
+            --wisdom: #2f74c0;
+            --charisma: #d59d2b;
         }
         * { box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
         body { background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
@@ -34,8 +34,8 @@
 
         .question-box { background: #000; padding: 15px; border: 2px solid var(--border); margin-bottom: 15px; min-height: 80px; font-size: 14px; line-height: 1.4; }
         .options-box { display: flex; flex-direction: column; gap: 8px; }
-        .opt-btn { background: #2d0031; border: 2px solid var(--border); color: #fff; padding: 12px; text-align: left; cursor: pointer; font-size: 13px; width: 100%; }
-        .opt-btn:hover:not([disabled]) { border-color: var(--accent); background: #3d0a42; }
+        .opt-btn { background: #173323; border: 2px solid var(--border); color: #fff; padding: 12px; text-align: left; cursor: pointer; font-size: 13px; width: 100%; }
+        .opt-btn:hover:not([disabled]) { border-color: var(--accent); background: #214730; }
         .correct { background: rgba(0,255,204,0.2) !important; border-color: var(--green) !important; color: var(--green); }
         .wrong { background: rgba(255,51,51,0.2) !important; border-color: var(--red) !important; color: var(--red); }
         
@@ -49,8 +49,24 @@
         .tray-panel { border-top: 2px dashed var(--border); margin-top: 15px; padding-top: 15px; }
         .upgrade-btn { background: var(--accent); color: #000; border: none; padding: 4px; font-size: 9px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
         .buy-card-btn { background: var(--green); color: #000; border: none; padding: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
-        .face-down { min-height: 132px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-color: var(--accent); background: linear-gradient(135deg, #231942, #5e548e); }
+        .face-down { min-height: 132px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-color: var(--accent); background: linear-gradient(135deg, #13261b, #4f6f52); }
         .face-down .blook-avatar { font-size: 40px; }
+        .map-panel { background: rgba(0,0,0,0.28); border: 2px solid var(--border); padding: 10px; margin-bottom: 15px; }
+        .map-title { display: flex; justify-content: space-between; color: var(--accent); font-weight: bold; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        .map-track { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
+        .map-node { min-height: 24px; border: 1px solid var(--border); background: #102219; color: #9fb7a6; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
+        .map-node.done { background: #24543a; color: var(--green); }
+        .map-node.current { background: var(--accent); color: #000; border-color: #fff; }
+        .map-node.boss { border-color: var(--red); }
+        .camp-actions { background: #07120d; border: 2px solid var(--accent); padding: 12px; margin-top: 12px; }
+        .camp-actions h3 { color: var(--accent); font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; }
+        .action-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .shop-btn { background: #173323; color: #fff; border: 2px solid var(--border); padding: 10px; font-size: 11px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .shop-btn:hover:not([disabled]) { border-color: var(--accent); }
+        .shop-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .focus-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 12px 0; color: #94a3b8; font-size: 12px; font-weight: bold; }
+        .focus-select { background: #07120d; color: #fff; border: 2px solid var(--border); padding: 7px; font-weight: bold; max-width: 220px; width: 100%; }
+        .focus-select:focus { outline: none; border-color: var(--accent); }
     </style>
 </head>
 <body>
@@ -58,8 +74,61 @@
 <div class="game-wrapper">
     <!-- SETUP DRAFT STAGE -->
     <div id="draft-screen" class="center">
-        <h1>Hand Drafting</h1>
-        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;" id="draft-progress">Completed Setup Answers: 0 / 5</p>
+        <h1>Patrol Drafting</h1>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;" id="draft-progress">Completed Scout Checks: 0 / 5</p>
+        <div class="focus-row">
+            <label for="question-focus">Focus:</label>
+            <select class="focus-select" id="question-focus" onchange="setQuestionFocus(this.value)">
+                <option value="all">All</option>
+                <optgroup label="Ranks">
+                    <option value="scout-rank">Scout Rank</option>
+                    <option value="tenderfoot">Tenderfoot</option>
+                    <option value="second-class">Second Class</option>
+                    <option value="first-class">First Class</option>
+                    <option value="star">Star</option>
+                    <option value="life">Life</option>
+                    <option value="eagle">Eagle</option>
+                </optgroup>
+                <optgroup label="Scout Skills">
+                    <option value="oath-law">Oath, Law, Motto</option>
+                    <option value="outdoor-ethics">Outdoor Code / Leave No Trace</option>
+                    <option value="camping">Camping</option>
+                    <option value="cooking">Cooking</option>
+                    <option value="tools">Tools / Totin Chip</option>
+                    <option value="fire-safety">Fire Safety</option>
+                    <option value="knots">Knots / Lashings</option>
+                    <option value="navigation">Navigation</option>
+                    <option value="nature">Nature / Plants</option>
+                    <option value="first-aid">First Aid</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="swimming">Swimming</option>
+                    <option value="service-leadership">Service / Leadership</option>
+                    <option value="personal-safety">Personal Safety</option>
+                    <option value="citizenship">Citizenship</option>
+                </optgroup>
+                <optgroup label="Merit Badges">
+                    <option value="merit-badges">All Merit Badges</option>
+                    <option value="eagle-required-merit-badges">Eagle-Required Merit Badges</option>
+                    <option value="citizenship-community">Citizenship in the Community</option>
+                    <option value="citizenship-nation">Citizenship in the Nation</option>
+                    <option value="citizenship-society">Citizenship in Society</option>
+                    <option value="citizenship-world">Citizenship in the World</option>
+                    <option value="communication">Communication</option>
+                    <option value="cooking-mb">Cooking Merit Badge</option>
+                    <option value="personal-fitness">Personal Fitness</option>
+                    <option value="personal-management">Personal Management</option>
+                    <option value="camping-mb">Camping Merit Badge</option>
+                    <option value="family-life">Family Life</option>
+                    <option value="emergency-preparedness">Emergency Preparedness</option>
+                    <option value="lifesaving">Lifesaving</option>
+                    <option value="environmental-science">Environmental Science</option>
+                    <option value="sustainability">Sustainability</option>
+                    <option value="swimming-mb">Swimming Merit Badge</option>
+                    <option value="hiking">Hiking</option>
+                    <option value="cycling">Cycling</option>
+                </optgroup>
+            </select>
+        </div>
         
         <div id="draft-quiz-view">
             <div class="question-box" id="draft-question">Loading database profiles...</div>
@@ -67,63 +136,78 @@
         </div>
         
         <div id="draft-choice-view" class="hide">
-            <p style="color: var(--accent); font-weight: bold; margin-bottom: 15px;">CHOOSE A BLOOK CARD FOR YOUR HAND:</p>
+            <p style="color: var(--accent); font-weight: bold; margin-bottom: 15px;">CHOOSE A SCOUT FOR YOUR PATROL:</p>
             <div class="card-container" id="draft-cards-pool"></div>
         </div>
     </div>
 
     <!-- MAIN BATTLE MODE -->
     <div id="battle-screen" class="hide">
-        <h1>TOWER OF DOOM</h1>
+        <h1>SCOUT CAMP CHALLENGE</h1>
         <div class="hud">
-            <div class="hud-metric">ROOM: <span id="hud-floor" class="hud-v orange">1/30</span></div>
-            <div class="hud-metric">HP: <span id="hud-hp" class="hud-v red">100/100</span></div>
-            <div class="hud-metric">ENEMY: <span id="hud-ehp" class="hud-v red">40/40</span></div>
-            <div class="hud-metric">COINS: <span id="hud-gold" class="hud-v green">0</span></div>
+            <div class="hud-metric">STOP: <span id="hud-floor" class="hud-v orange">1/30</span></div>
+            <div class="hud-metric">MORALE: <span id="hud-hp" class="hud-v red">100/100</span></div>
+            <div class="hud-metric">CHALLENGE: <span id="hud-ehp" class="hud-v red">40 GRIT</span></div>
+            <div class="hud-metric">MERIT BADGES: <span id="hud-gold" class="hud-v green">0</span></div>
         </div>
 
-        <p style="font-size:12px; color:#a194b8; text-align:center; font-weight: bold; margin:0 0 10px 0;" id="battle-comms">Survive to ascend the magical Tower of Doom!</p>
+        <p style="font-size:12px; color:#a194b8; text-align:center; font-weight: bold; margin:0 0 10px 0;" id="battle-comms">Lead your patrol through the camporee challenge course.</p>
+
+        <div class="map-panel">
+            <div class="map-title"><span>Camporee Map</span><span id="map-status">Stop 1 of 30</span></div>
+            <div class="map-track" id="camp-map"></div>
+        </div>
 
         <div style="display: flex; justify-content: space-around; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; align-items: center;">
-            <div style="text-align: center;"><p style="font-size:10px; margin:0 0 5px 0; color:#888;">YOUR CARD</p><div id="user-active-card-slot"></div></div>
+            <div style="text-align: center;"><p style="font-size:10px; margin:0 0 5px 0; color:#888;">YOUR SCOUT</p><div id="user-active-card-slot"></div></div>
             <div style="font-size: 24px; font-weight: bold; color: var(--accent);">VS</div>
-            <div style="text-align: center;"><p style="font-size:10px; margin:0 0 5px 0; color:#888;">ENEMY CARD</p><div id="enemy-card-slot"></div></div>
+            <div style="text-align: center;"><p style="font-size:10px; margin:0 0 5px 0; color:#888;">CAMP CHALLENGE</p><div id="enemy-card-slot"></div></div>
         </div>
 
         <div id="quiz-interaction-block">
-            <div class="question-box" id="battle-question">Loading chamber challenge...</div>
+            <div class="question-box" id="battle-question">Loading scout skill check...</div>
             <div class="options-box" id="battle-options"></div>
         </div>
 
         <div id="attribute-select-block" class="hide">
-            <p style="text-align: center; color: var(--green); font-weight: bold; margin: 0 0 10px 0;">CORRECT! CHOOSE STRENGTH, WISDOM, OR CHARISMA:</p>
+            <p style="text-align: center; color: var(--green); font-weight: bold; margin: 0 0 10px 0;">CORRECT! CHOOSE FITNESS, KNOWLEDGE, OR LEADERSHIP:</p>
             <div class="attr-grid">
-                <button class="attr-btn st-s" onclick="executeAttack('str')">STR</button>
-                <button class="attr-btn st-w" onclick="executeAttack('wis')">WIS</button>
-                <button class="attr-btn st-c" onclick="executeAttack('cha')">CHA</button>
+                <button class="attr-btn st-s" onclick="executeAttack('str')">FIT</button>
+                <button class="attr-btn st-w" onclick="executeAttack('wis')">KNOW</button>
+                <button class="attr-btn st-c" onclick="executeAttack('cha')">LEAD</button>
             </div>
         </div>
 
         <div id="combat-log" style="text-align:center; font-weight:bold; margin-top:15px; font-size:13px;"></div>
         <div id="reward-choice-view" class="hide">
-            <p style="color: var(--accent); font-weight: bold; margin: 15px 0;">VICTORY REWARD: CHOOSE 1 CARD</p>
+            <p style="color: var(--accent); font-weight: bold; margin: 15px 0;">PATROL REWARD: CHOOSE 1 SCOUT</p>
             <div class="card-container" id="reward-cards-pool"></div>
         </div>
-        <button id="next-floor-btn" class="action-btn hide">Ascend To Next Floor</button>
+        <div id="camp-actions" class="camp-actions hide">
+            <h3>Camp Stop</h3>
+            <div class="action-row">
+                <button class="shop-btn" id="shop-recruit-btn" onclick="buyScoutFromShop()">🧭 Recruit Scout<br>35 Merit Badges</button>
+                <button class="shop-btn" id="shop-train-btn" onclick="trainActiveScout()">🏕️ Train Lead<br>25 Merit Badges</button>
+                <button class="shop-btn" id="rest-btn" onclick="restPatrol()">🔥 Rest Patrol<br>15 Merit Badges</button>
+                <button class="shop-btn" id="remove-card-btn" onclick="removeActiveScout()">🗑️ Retire Lead<br>+10 Merit Badges</button>
+            </div>
+            <p id="camp-action-log" style="font-size: 11px; color: #94a3b8; margin: 10px 0 0 0; text-align: center;">Spend badges, rest, or continue to the next stop.</p>
+        </div>
+        <button id="next-floor-btn" class="action-btn hide">Move To Next Camp Stop</button>
 
         <!-- DECK DISPLAY -->
         <div class="tray-panel">
-            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--accent); text-transform: uppercase;">Deck</h3>
-            <p style="font-size: 10px; color: #888; margin: 0 0 8px 0; text-align: center;">At the start of each battle, Tower of Doom picks one card from your deck at random.</p>
+            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--accent); text-transform: uppercase;">Patrol Roster</h3>
+            <p style="font-size: 10px; color: #888; margin: 0 0 8px 0; text-align: center;">At each camp stop, one scout from your patrol is chosen to lead the challenge.</p>
             <div class="card-container" id="player-deck-tray"></div>
         </div>
     </div>
 
     <!-- TERMINAL END SCREEN -->
     <div id="end-screen" class="center hide">
-        <h2 id="end-title" style="color: var(--accent);">EXPEDITION TERMINATED</h2>
+        <h2 id="end-title" style="color: var(--accent);">CAMPOREE COMPLETE</h2>
         <p id="end-desc" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;"></p>
-        <button onclick="location.reload()" class="action-btn">Commence New Run</button>
+        <button onclick="location.reload()" class="action-btn">Start New Run</button>
     </div>
 </div>
 
@@ -171,30 +255,82 @@ What is a core principle of Leave No Trace regarding wildlife?:Respect wildlife 
 What is the minimum rank requirement for a Scout to serve as a Junior Assistant Scoutmaster?:Must be at least 16 years old and appointed by the Scoutmaster,Must be an Eagle Scout under 18,Must be a First Class Scout of any age,Must be a Life Scout who is 14 years old:Must be at least 16 years old and appointed by the Scoutmaster
 `.trim().split('\n');
 
+    const extraRawData = `
+Which rank is earned immediately before Tenderfoot?:Scout rank,Tenderfoot rank,Second Class rank,Star rank:Scout rank
+Which rank comes immediately after Tenderfoot?:Second Class,First Class,Star,Life:Second Class
+Which rank comes immediately after Second Class?:First Class,Tenderfoot,Star,Eagle:First Class
+Which rank requires being active for at least four months as a First Class Scout?:Star,Life,Eagle,Tenderfoot:Star
+Which rank requires being active for at least six months as a Star Scout?:Life,Star,Eagle,First Class:Life
+Which rank requires earning a total of 21 merit badges?:Eagle,Life,Star,First Class:Eagle
+For Eagle rank how many merit badges are currently Eagle-required according to Scouting America?:14,13,10,21:14
+Which merit badge is listed as Eagle-required by Scouting America?:Family Life,Chess,Robotics,Photography:Family Life
+Which citizenship merit badge is listed as Eagle-required by Scouting America?:Citizenship in Society,American Business,Law,Public Health:Citizenship in Society
+Which pair is a choose-one Eagle-required group?:Emergency Preparedness or Lifesaving,Art or Music,Chess or Game Design,Robotics or Engineering:Emergency Preparedness or Lifesaving
+Which pair is a choose-one Eagle-required group?:Environmental Science or Sustainability,Forestry or Gardening,Oceanography or Weather,Mining or Geology:Environmental Science or Sustainability
+Which set is a choose-one Eagle-required group?:Swimming Hiking or Cycling,Rowing Skating or Athletics,Climbing Golf or Sports,Backpacking Canoeing or Kayaking:Swimming Hiking or Cycling
+Which Eagle-required merit badge focuses on household chores and a family project?:Family Life,Personal Management,Citizenship in the World,Communication:Family Life
+Which Eagle-required merit badge focuses on budgeting saving and tracking money?:Personal Management,Personal Fitness,Communication,Cooking:Personal Management
+Which Eagle-required merit badge focuses on a 12-week physical fitness program?:Personal Fitness,Camping,Swimming,Lifesaving:Personal Fitness
+Which Eagle-required merit badge focuses on menus food safety and meal preparation?:Cooking,Family Life,Camping,Personal Fitness:Cooking
+Which Eagle-required merit badge focuses on planning speeches meetings and communication methods?:Communication,Citizenship in the Nation,Citizenship in Society,Personal Management:Communication
+Which Eagle-required merit badge focuses on government rights and duties at the national level?:Citizenship in the Nation,Citizenship in the Community,Citizenship in the World,Family Life:Citizenship in the Nation
+Which Eagle-required merit badge focuses on global citizenship and world organizations?:Citizenship in the World,Citizenship in Society,Citizenship in the Community,Communication:Citizenship in the World
+Which Eagle-required merit badge focuses on emergency plans triage and readiness?:Emergency Preparedness,Environmental Science,Sustainability,Cycling:Emergency Preparedness
+Which Eagle-required merit badge focuses on water rescue skills?:Lifesaving,Swimming,Hiking,Cycling:Lifesaving
+Which rank requirement category includes showing the right way to pack and carry camping gear?:Tenderfoot,Star,Life,Eagle:Tenderfoot
+Which rank includes reciting the principles of Leave No Trace from memory?:Second Class,Tenderfoot,Star,Eagle:Second Class
+Which rank includes planning a menu and cooking meals on a campout?:First Class,Scout,Tenderfoot,Star:First Class
+For Star rank how many hours of service are required?:6 hours,2 hours,3 hours,12 hours:6 hours
+For Life rank how many hours of service are required?:6 hours,2 hours,3 hours,12 hours:6 hours
+For Star rank how long must a Scout serve actively in a position of responsibility?:4 months,6 months,1 month,12 months:4 months
+For Life rank how long must a Scout serve actively in a position of responsibility?:6 months,4 months,2 months,12 months:6 months
+Which rank requires an Eagle Scout service project?:Eagle,Life,Star,First Class:Eagle
+Which subject includes the three R's of personal safety and protection?:Personal Safety,Navigation,Cooking,Knots:Personal Safety
+Which subject covers pushups situps sit-and-reach and a 1-mile walk/run?:Fitness,Camping,Citizenship,Navigation:Fitness
+Which subject covers MyPlate or current USDA nutrition guidance?:Cooking,First Aid,Knots,Swimming:Cooking
+Which subject covers identifying plants such as poison ivy?:Nature,Tools,Leadership,Family Life:Nature
+Which subject covers Safe Swim Defense and the buddy system?:Swimming,Camping,Personal Management,Citizenship:Swimming
+Which subject covers using a compass to follow an azimuth?:Navigation,Knots,First Aid,Communication:Navigation
+Which subject covers square lashing diagonal lashing and tripod lashing?:Knots / Lashings,First Aid,Citizenship,Personal Fitness:Knots / Lashings
+Which subject covers the pocketknife ax and saw safety rules?:Tools / Totin Chip,Swimming,Citizenship,Communication:Tools / Totin Chip
+Which subject covers when it is appropriate to build a cooking fire?:Fire Safety,Citizenship,Family Life,Cycling:Fire Safety
+Which subject covers serving others and positions of responsibility?:Service / Leadership,Navigation,Nature,Swimming:Service / Leadership
+Which subject covers the Outdoor Code and Leave No Trace principles?:Outdoor Ethics,Personal Management,Communication,Family Life:Outdoor Ethics
+`.trim().split('\n');
+
 
     const towerBlooks = [
-        { name: "Horse", avatar: "H" }, { name: "Pig", avatar: "P" }, { name: "Sheep", avatar: "S" },
-        { name: "Dog", avatar: "D" }, { name: "Cat", avatar: "C" }, { name: "Rabbit", avatar: "R" },
-        { name: "Goldfish", avatar: "G" }, { name: "Hamster", avatar: "H" }, { name: "Turtle", avatar: "T" },
-        { name: "Bear", avatar: "B" }, { name: "Fox", avatar: "F" }, { name: "Owl", avatar: "O" },
-        { name: "Tiger", avatar: "T" }, { name: "Parrot", avatar: "P" }, { name: "Wizard", avatar: "W" },
-        { name: "Fairy", avatar: "F" }, { name: "Slime Monster", avatar: "S" }, { name: "Jester", avatar: "J" },
-        { name: "Dragon", avatar: "D" }, { name: "Unicorn", avatar: "U" }, { name: "King", avatar: "K" }
+        { name: "Tenderfoot Trailblazer", avatar: "🥾" },
+        { name: "Second Class Navigator", avatar: "⚜" },
+        { name: "First Class Firebuilder", avatar: "⚜️" },
+        { name: "Star Service Leader", avatar: "🌟" },
+        { name: "Life Patrol Guide", avatar: "🫡" },
+        { name: "Eagle Project Lead", avatar: "🦅" },
+        { name: "Quartermaster", avatar: "⛺" },
+        { name: "Bugler", avatar: "🎺" },
+        { name: "Den Chief", avatar: "🐻" },
+        { name: "SPL Captain", avatar: "🔥" },
+        { name: "Leave No Trace Guide", avatar: "♻️" },
+        { name: "First Aid Ace", avatar: "⛑️" },
+        { name: "Compass Expert", avatar: "🧭" },
+        { name: "Knot Master", avatar: "🪢" },
+        { name: "Camp Cook", avatar: "👨‍🍳" },
+        { name: "Outdoor Ethics Scout", avatar: "⛰️" }
     ];
     const towerEnemies = [
-        { name: "Evil Chicken", avatar: "C", hp: 25, min: 4, max: 10 },
-        { name: "Evil Dog", avatar: "D", hp: 28, min: 5, max: 12 },
-        { name: "Evil Cat", avatar: "C", hp: 32, min: 5, max: 13 },
-        { name: "Evil Pig", avatar: "P", hp: 40, min: 6, max: 14 },
-        { name: "Evil Bear", avatar: "B", hp: 45, min: 7, max: 15 },
-        { name: "Evil Witch", avatar: "W", hp: 55, min: 9, max: 17 },
-        { name: "Evil Slime Monster", avatar: "S", hp: 60, min: 9, max: 18 },
-        { name: "Evil Dragon", avatar: "D", hp: 65, min: 10, max: 19 }
+        { name: "Rainy Campsite" , avatar: "⛺⛈️" , hp: 25, min: 4, max: 10 }, 
+{ name: "Tangled Guyline" , avatar: "🪢✂️" , hp: 28, min: 5, max: 12 }, 
+{ name: "Lost Trail Marker" , avatar: "🪧🌲" , hp: 32, min: 5, max: 13 }, 
+{ name: "Cold Breakfast Rush" , avatar: "🥣🥶🏃‍♂️" , hp: 40, min: 6, max: 14 }, 
+{ name: "Poison Ivy Patch" , avatar: "🌿🥵" , hp: 45, min: 7, max: 15 }, 
+{ name: "orienteering Course" , avatar: "🧭🗺️" , hp: 55, min: 9, max: 17 }, 
+{ name: "First Aid Drill" , avatar: "⛑️🩹" , hp: 60, min: 9, max: 18 }, 
+{ name: "Leave No Trace Audit" , avatar: "🥾🚮" , hp: 65, min: 10, max: 19 }
     ];
     const towerBosses = [
-        { room: 10, name: "Evil Unicorn", avatar: "U", hp: 70, min: 12, max: 20 },
-        { room: 20, name: "Evil Santa Claus", avatar: "S", hp: 100, min: 14, max: 20 },
-        { room: 30, name: "Evil King", avatar: "K", hp: 150, min: 16, max: 20 }
+        { room: 10, name: "Totin Chip Trial", avatar: "🪓", hp: 70, min: 12, max: 20 },
+        { room: 20, name: "Firem'n Chit Trial", avatar: "🔥", hp: 100, min: 14, max: 20 },
+        { room: 30, name: "Eagle Board Challenge", avatar: "🦅👔📜✍️", hp: 150, min: 16, max: 20 }
     ];
     const maxRoom = 30;
 
@@ -211,23 +347,115 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
     let currentEnemyCard = null;
     let enemyRevealed = false;
     let lastQuestionCorrect = false;
+    let questionFocus = "all";
+    let recentQuestionIds = [];
 
     // REBUILT DATABASE LOADER (Uses safe, absolute explicit array indexes)
-    rawData.forEach(line => {
+    rawData.concat(extraRawData).forEach(line => {
         const parts = line.split(':');
         if(parts.length >= 3) {
             const rawQuestion = parts[0];
             const rawOptions = parts[1].split(',');
             const rawAnswer = parts[2];
-            qaPool.push({
+            const item = {
+                id: qaPool.length,
                 q: rawQuestion,
                 opts: rawOptions,
                 a: rawAnswer
-            });
+            };
+            item.tags = getQuestionTags(item);
+            qaPool.push(item);
         }
     });
 
     function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function getQuestionTags(item) {
+        const text = `${item.q} ${item.opts.join(' ')} ${item.a}`.toLowerCase();
+        const tags = [];
+        const add = (...items) => items.forEach(tag => { if(!tags.includes(tag)) tags.push(tag); });
+
+        if(text.includes("scout rank")) add("scout-rank");
+        if(text.includes("tenderfoot")) add("tenderfoot");
+        if(text.includes("second class")) add("second-class");
+        if(text.includes("first class")) add("first-class");
+        if(text.includes("star rank") || text.includes("star scout") || text.includes("as a first class scout")) add("star");
+        if(text.includes("life rank") || text.includes("life scout") || text.includes("as a star scout")) add("life");
+        if(text.includes("eagle")) add("eagle");
+
+        if(text.includes("scout oath") || text.includes("scout law") || text.includes("scout motto") || text.includes("scout slogan") || text.includes("edge")) add("oath-law");
+        if(text.includes("first aid") || text.includes("cpr") || text.includes("burn") || text.includes("snakebite") || text.includes("hypothermia") || text.includes("cut or scrape") || text.includes("rescue") || text.includes("triage")) add("first-aid");
+        if(text.includes("knot") || text.includes("hitch") || text.includes("lashing") || text.includes("bowline") || text.includes("rope") || text.includes("whip") || text.includes("fuse")) add("knots");
+        if(text.includes("camp") || text.includes("tent") || text.includes("outdoor essentials") || text.includes("campsite") || text.includes("overnight")) add("camping");
+        if(text.includes("cook") || text.includes("menu") || text.includes("myplate") || text.includes("food") || text.includes("breakfast")) add("cooking");
+        if(text.includes("pocketknife") || text.includes("totin") || text.includes("ax") || text.includes("axe") || text.includes("saw") || text.includes("tool")) add("tools");
+        if(text.includes("fire") || text.includes("firemn") || text.includes("firem")) add("fire-safety");
+        if(text.includes("compass") || text.includes("map") || text.includes("azimuth") || text.includes("orient") || text.includes("navigation") || text.includes("hike") || text.includes("trail")) add("navigation");
+        if(text.includes("poison ivy") || text.includes("plant") || text.includes("wildlife") || text.includes("animal") || text.includes("nature")) add("nature");
+        if(text.includes("swim") || text.includes("safe swim") || text.includes("buddy system") || text.includes("water rescue")) add("swimming");
+        if(text.includes("pushups") || text.includes("situps") || text.includes("sit-and-reach") || text.includes("1-mile") || text.includes("fitness") || text.includes("physical")) add("fitness");
+        if(text.includes("service") || text.includes("leadership") || text.includes("position of responsibility") || text.includes("patrol leader") || text.includes("senior patrol")) add("service-leadership");
+        if(text.includes("personal safety") || text.includes("bullying") || text.includes("three r")) add("personal-safety");
+        if(text.includes("leave no trace") || text.includes("outdoor code") || text.includes("environmental") || text.includes("sustainability")) add("outdoor-ethics");
+        if(text.includes("citizenship") || text.includes("government") || text.includes("municipal") || text.includes("branches")) add("citizenship");
+
+        if(text.includes("merit badge")) add("merit-badges");
+        if(text.includes("first aid") || text.includes("citizenship in the community") || text.includes("citizenship in the nation") || text.includes("citizenship in society") || text.includes("citizenship in the world") || text.includes("communication") || text.includes("cooking") || text.includes("personal fitness") || text.includes("personal management") || text.includes("camping") || text.includes("family life") || text.includes("emergency preparedness") || text.includes("lifesaving") || text.includes("environmental science") || text.includes("sustainability") || text.includes("swimming") || text.includes("hiking") || text.includes("cycling")) add("eagle-required-merit-badges", "merit-badges");
+        if(text.includes("citizenship in the community")) add("citizenship-community");
+        if(text.includes("citizenship in the nation")) add("citizenship-nation");
+        if(text.includes("citizenship in society")) add("citizenship-society");
+        if(text.includes("citizenship in the world")) add("citizenship-world");
+        if(text.includes("communication")) add("communication");
+        if(text.includes("cooking")) add("cooking-mb");
+        if(text.includes("personal fitness")) add("personal-fitness");
+        if(text.includes("personal management")) add("personal-management");
+        if(text.includes("camping merit") || text.includes("camping merit badge")) add("camping-mb");
+        if(text.includes("family life")) add("family-life");
+        if(text.includes("emergency preparedness")) add("emergency-preparedness");
+        if(text.includes("lifesaving")) add("lifesaving");
+        if(text.includes("environmental science")) add("environmental-science");
+        if(text.includes("sustainability")) add("sustainability");
+        if(text.includes("swimming")) add("swimming-mb");
+        if(text.includes("hiking")) add("hiking");
+        if(text.includes("cycling")) add("cycling");
+
+        return tags.length ? tags : ["all"];
+    }
+
+    function setQuestionFocus(value) {
+        questionFocus = value || "all";
+        recentQuestionIds = [];
+    }
+
+    function getFocusedQuestionPool() {
+        if(questionFocus === "all") return qaPool;
+        const focused = qaPool.filter(item => item.tags.includes(questionFocus));
+        return focused.length ? focused : qaPool;
+    }
+
+    function chooseQuestion() {
+        const focusedPool = getFocusedQuestionPool();
+        let candidates = focusedPool.filter(item => !recentQuestionIds.includes(item.id));
+        if(candidates.length === 0) candidates = focusedPool;
+
+        const item = candidates[rand(0, candidates.length - 1)];
+        recentQuestionIds.push(item.id);
+        if(recentQuestionIds.length > 5) recentQuestionIds.shift();
+        return item;
+    }
+
+    function shuffledOptions(options) {
+        const shuffled = [...options];
+        for(let i = shuffled.length - 1; i > 0; i--) {
+            const j = rand(0, i);
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function statName(attr) {
+        return { str: "FITNESS", wis: "KNOWLEDGE", cha: "LEADERSHIP" }[attr] || attr.toUpperCase();
+    }
     
     function generateBlookCard() {
         const blook = towerBlooks[rand(0, towerBlooks.length - 1)];
@@ -244,7 +472,7 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
         return `
             <div class="blook-card face-down">
                 <div class="blook-avatar">?</div>
-                <div style="font-weight:bold;margin-bottom:5px;font-size:10px;">Face Down</div>
+                <div style="font-weight:bold;margin-bottom:5px;font-size:10px;">Hidden Challenge</div>
             </div>`;
     }
 
@@ -255,11 +483,55 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
             <div class="blook-card">
                 <div class="blook-avatar">${card.avatar}</div>
                 <div style="font-weight:bold;margin-bottom:5px;font-size:10px;">${card.name}</div>
-                <div class="stat-line st-s"><span>STR</span><span>${card.str}</span></div>
-                <div class="stat-line st-w"><span>WIS</span><span>${card.wis}</span></div>
-                <div class="stat-line st-c"><span>CHA</span><span>${card.cha}</span></div>
+                <div class="stat-line st-s"><span>FIT</span><span>${card.str}</span></div>
+                <div class="stat-line st-w"><span>KNOW</span><span>${card.wis}</span></div>
+                <div class="stat-line st-c"><span>LEAD</span><span>${card.cha}</span></div>
                 ${upgradeBtnHtml}
             </div>`;
+    }
+
+    function renderMap() {
+        const map = document.getElementById('camp-map');
+        const status = document.getElementById('map-status');
+        if(!map || !status) return;
+
+        map.innerHTML = "";
+        status.innerText = `Stop ${currentFloor} of ${maxRoom}`;
+        for(let stop = 1; stop <= maxRoom; stop++) {
+            const node = document.createElement('div');
+            node.className = 'map-node';
+            if(stop < currentFloor) node.classList.add('done');
+            if(stop === currentFloor) node.classList.add('current');
+            if(stop % 10 === 0) node.classList.add('boss');
+            node.innerText = stop % 10 === 0 ? "🏁" : stop;
+            map.appendChild(node);
+        }
+    }
+
+    function updateCampActionButtons() {
+        const recruit = document.getElementById('shop-recruit-btn');
+        const train = document.getElementById('shop-train-btn');
+        const rest = document.getElementById('rest-btn');
+        const remove = document.getElementById('remove-card-btn');
+        if(!recruit || !train || !rest || !remove) return;
+
+        recruit.disabled = coins < 35;
+        train.disabled = coins < 25 || playerDeck.length === 0;
+        rest.disabled = coins < 15 || userHp >= 100;
+        remove.disabled = playerDeck.length <= 1;
+    }
+
+    function showCampActions(message) {
+        document.getElementById('camp-actions').classList.remove('hide');
+        document.getElementById('next-floor-btn').classList.remove('hide');
+        if(message) document.getElementById('camp-action-log').innerText = message;
+        updateCampActionButtons();
+        renderMap();
+    }
+
+    function hideCampActions() {
+        document.getElementById('camp-actions').classList.add('hide');
+        document.getElementById('camp-action-log').innerText = "Spend badges, rest, or continue to the next stop.";
     }
 
     // --- DRAFT SELECTION HANDLERS ---
@@ -271,20 +543,20 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
             loadBattleQuestion();
             return;
         }
-        document.getElementById('draft-progress').innerText = `Completed Setup Answers: ${draftCount} / 5`;
-        const item = qaPool[rand(0, qaPool.length - 1)];
+        document.getElementById('draft-progress').innerText = `Completed Scout Checks: ${draftCount} / 5`;
+        const item = chooseQuestion();
         document.getElementById('draft-question').innerText = item.q;
         const optsBox = document.getElementById('draft-options');
         optsBox.innerHTML = "";
         
-        item.opts.forEach(o => {
+        shuffledOptions(item.opts).forEach(o => {
             const btn = document.createElement('button');
             btn.classList.add('opt-btn');
             btn.innerText = o;
             btn.onclick = () => {
                 optsBox.querySelectorAll('button').forEach(b => b.disabled = true);
                 draftCount++;
-                document.getElementById('draft-progress').innerText = `Completed Setup Answers: ${draftCount} / 5`;
+                document.getElementById('draft-progress').innerText = `Completed Scout Checks: ${draftCount} / 5`;
                 displayDraftRewards();
             };
             optsBox.appendChild(btn);
@@ -329,9 +601,8 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
         enemyRevealed = false;
         streakOwner = null;
         streakCount = 1;
-        document.getElementById('battle-comms').innerText = boss ? `${enemyTemplate.name} blocks the end of this map!` : `${enemyTemplate.name} appears in the Tower of Doom.`;
+        document.getElementById('battle-comms').innerText = boss ? `${enemyTemplate.name} is the big test for this leg of camp.` : `${enemyTemplate.name} is up next on the camporee course.`;
         updateHud();
-        renderTray();
         renderTray();
     }
 
@@ -356,41 +627,16 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
     function updateHud() {
         document.getElementById('hud-floor').innerText = `${currentFloor} / ${maxRoom}`;
         document.getElementById('hud-hp').innerText = `${userHp} / 100`;
-        document.getElementById('hud-ehp').innerText = `${enemyHp} HP`;
+        document.getElementById('hud-ehp').innerText = `${enemyHp} GRIT`;
         document.getElementById('hud-gold').innerText = coins;
+        updateCampActionButtons();
+        renderMap();
     }
 
     function setActiveFighter(index) {
         activeCardIndex = index;
-        document.getElementById('battle-comms').innerText = `Switched field lead to ${playerDeck[activeCardIndex].name}!`;
+        document.getElementById('battle-comms').innerText = `${playerDeck[activeCardIndex].name} takes point for the patrol.`;
         renderTray();
-    }
-
-    function upgradeCard(index) {
-        if(gold >= 25) {
-            gold -= 25;
-            playerDeck[index].str = Math.min(20, playerDeck[index].str + 2);
-            playerDeck[index].wis = Math.min(20, playerDeck[index].wis + 2);
-            playerDeck[index].cha = Math.min(20, playerDeck[index].cha + 2);
-            document.getElementById('battle-comms').innerText = `Upgraded ${playerDeck[index].name} statistics by +2!`;
-            updateHud();
-            renderTray();
-        } else {
-            alert("Insufficient Gold! Need 25 Gold to upgrade cards.");
-        }
-    }
-
-    function buyCardFromShop() {
-        if(coins >= 40) {
-            coins -= 40;
-            const newCard = generateBlookCard();
-            playerDeck.push(newCard);
-            document.getElementById('battle-comms').innerText = `Recruited ${newCard.name} directly into your active card deck!`;
-            updateHud();
-            renderTray();
-        } else {
-            alert("Insufficient coins! Need 40 coins to purchase a character card.");
-        }
     }
 
     function displayBattleRewards() {
@@ -409,25 +655,67 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
             cardElement.onclick = () => {
                 playerDeck.push(card);
                 rewardView.classList.add('hide');
-                document.getElementById('next-floor-btn').classList.remove('hide');
+                showCampActions(`${card.name} joins the patrol. Visit the shop, rest, or move on. 🏕️`);
                 renderTray();
             };
             poolDiv.appendChild(cardElement);
         });
     }
 
+    function buyScoutFromShop() {
+        if(coins < 35) return;
+        coins -= 35;
+        const newScout = generateBlookCard();
+        playerDeck.push(newScout);
+        document.getElementById('camp-action-log').innerText = `${newScout.name} joined from the trading post. 🧭`;
+        updateHud();
+        renderTray();
+    }
+
+    function trainActiveScout() {
+        if(coins < 25 || playerDeck.length === 0) return;
+        coins -= 25;
+        const scout = playerDeck[activeCardIndex];
+        scout.str = Math.min(20, scout.str + 2);
+        scout.wis = Math.min(20, scout.wis + 2);
+        scout.cha = Math.min(20, scout.cha + 2);
+        document.getElementById('camp-action-log').innerText = `${scout.name} trained all skills by +2. 🏕️`;
+        updateHud();
+        renderTray();
+    }
+
+    function restPatrol() {
+        if(coins < 15 || userHp >= 100) return;
+        coins -= 15;
+        const healed = Math.min(25, 100 - userHp);
+        userHp += healed;
+        document.getElementById('camp-action-log').innerText = `The patrol rested by the fire and recovered ${healed} morale. 🔥`;
+        updateHud();
+    }
+
+    function removeActiveScout() {
+        if(playerDeck.length <= 1) return;
+        const removed = playerDeck.splice(activeCardIndex, 1)[0];
+        coins += 10;
+        activeCardIndex = Math.min(activeCardIndex, playerDeck.length - 1);
+        document.getElementById('camp-action-log').innerText = `${removed.name} rotated out of the patrol. You recovered 10 merit badges. 🗑️`;
+        updateHud();
+        renderTray();
+    }
+
     function loadBattleQuestion() {
         document.getElementById('quiz-interaction-block').classList.remove('hide');
         document.getElementById('attribute-select-block').classList.add('hide');
         document.getElementById('reward-choice-view').classList.add('hide');
+        hideCampActions();
         document.getElementById('combat-log').innerText = "";
         
-        const item = qaPool[rand(0, qaPool.length - 1)];
+        const item = chooseQuestion();
         document.getElementById('battle-question').innerText = item.q;
         const optsBox = document.getElementById('battle-options');
         optsBox.innerHTML = "";
 
-        item.opts.forEach(o => {
+        shuffledOptions(item.opts).forEach(o => {
             const btn = document.createElement('button');
             btn.classList.add('opt-btn');
             btn.innerText = o;
@@ -441,10 +729,10 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
                 } else {
                     btn.classList.add('wrong');
                     lastQuestionCorrect = false;
-                    let enemyBestAttr = 'str';
-                    if(currentEnemyCard.wis > currentEnemyCard[enemyBestAttr]) enemyBestAttr = 'wis';
-                    if(currentEnemyCard.cha > currentEnemyCard[enemyBestAttr]) enemyBestAttr = 'cha';
-                    setTimeout(() => executeAttack(enemyBestAttr), 1200);
+                    let challengeBestAttr = 'str';
+                    if(currentEnemyCard.wis > currentEnemyCard[challengeBestAttr]) challengeBestAttr = 'wis';
+                    if(currentEnemyCard.cha > currentEnemyCard[challengeBestAttr]) challengeBestAttr = 'cha';
+                    setTimeout(() => executeAttack(challengeBestAttr), 1200);
                 }
             };
             optsBox.appendChild(btn);
@@ -468,17 +756,17 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
             streakOwner = "player";
             const dmg = diff * streakCount;
             enemyHp -= dmg;
-            log.innerHTML = `<span class="green">${pCard.name}'s ${attr.toUpperCase()} beat ${eCard.name}'s card by ${diff}. Enemy loses ${dmg} HP. Streak x${streakCount}.</span>`;
+            log.innerHTML = `<span class="green">${pCard.name}'s ${statName(attr)} beat ${eCard.name} by ${diff}. Challenge loses ${dmg} grit. Streak x${streakCount}.</span>`;
         } else if(enemyVal > playerVal) {
             streakCount = streakOwner === "enemy" ? streakCount + 1 : 1;
             streakOwner = "enemy";
             const dmg = diff * streakCount;
             userHp -= dmg;
-            log.innerHTML = `<span class="red">${eCard.name}'s ${attr.toUpperCase()} beat your card by ${diff}. You lose ${dmg} HP. Enemy streak x${streakCount}.</span>`;
+            log.innerHTML = `<span class="red">${eCard.name}'s ${statName(attr)} beat your scout by ${diff}. Patrol morale drops ${dmg}. Challenge streak x${streakCount}.</span>`;
         } else {
             streakOwner = null;
             streakCount = 1;
-            log.innerHTML = `<span class="orange">Both cards had ${playerVal} ${attr.toUpperCase()}. No damage.</span>`;
+            log.innerHTML = `<span class="orange">Both sides matched at ${playerVal} ${statName(attr)}. No morale lost.</span>`;
         }
 
         updateHud();
@@ -489,8 +777,12 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
             const reward = currentFloor % 10 === 0 ? rand(35, 55) : rand(10, 25);
             coins += reward;
             updateHud();
-            log.innerHTML += `<br><span class="orange">${eCard.name} defeated. You gain ${reward} coins and may choose a new card.</span>`;
-            displayBattleRewards();
+            log.innerHTML += `<br><span class="orange">${eCard.name} completed. You earn ${reward} badges and may add a scout to the patrol.</span>`;
+            if(currentFloor >= maxRoom) {
+                setTimeout(() => terminateGame(true), 1200);
+            } else {
+                displayBattleRewards();
+            }
         } else {
             setTimeout(loadBattleQuestion, 2000);
         }
@@ -513,15 +805,13 @@ What is the minimum rank requirement for a Scout to serve as a Junior Assistant 
         end.classList.remove('hide');
         
         if(win) {
-            document.getElementById('end-title').innerText = "👑 CITADEL CONQUERED";
+            document.getElementById('end-title').innerText = "CAMPOREE CONQUERED";
             document.getElementById('end-title').style.color = "var(--green)";
-            document.getElementById('end-title').innerText = "TOWER CONQUERED";
-            document.getElementById('end-desc').innerText = `Victory! You defeated the Evil King and escaped the Tower of Doom with ${coins} coins.`;
+            document.getElementById('end-desc').innerText = `Victory! Your patrol completed every camp stop and finished with ${coins} badges.`;
         } else {
-            document.getElementById('end-title').innerText = "💀 EXPEDITION FAILED";
+            document.getElementById('end-title').innerText = "PATROL NEEDS A REST";
             document.getElementById('end-title').style.color = "var(--red)";
-            document.getElementById('end-title').innerText = "RUN FAILED";
-            document.getElementById('end-desc').innerText = `You ran out of HP in room ${currentFloor} of ${maxRoom}. Build a better deck and try the tower again.`;
+            document.getElementById('end-desc').innerText = `Your patrol ran out of morale at camp stop ${currentFloor} of ${maxRoom}. Review the handbook, rebuild the roster, and try again.`;
         }
     }
 

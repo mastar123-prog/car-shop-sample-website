@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Master Car Accessories</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-</head>
 </head>
 <body>
     <nav class="navbar">
@@ -23,6 +23,7 @@
             <li><a href="Get-a-new-password.htm"><ion-icon name="key-outline"></ion-icon> Reset</a></li>
         </ul>
     </nav>
+
     <div class="container">
         <div class="card">
             <div class="title-box">
@@ -31,72 +32,27 @@
             </div>
             <form id="registerForm">
                 <div class="group">
-                    <label for="regName"><ion-icon name="person-outline"></ion-icon> Full Name</label>
-                    <input type="text" id="regName" placeholder="Enter full name" required />
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" placeholder="Enter full name" required>
                 </div>
                 <div class="group">
-                    <label for="regEmail"><ion-icon name="mail-outline"></ion-icon> Email Address</label>
-                    <input type="email" id="regEmail" placeholder="name@example.com" required />
+                    <label for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" placeholder="name@example.com" required>
                 </div>
                 <div class="group">
-                    <label for="regPass"><ion-icon name="lock-closed-outline"></ion-icon> Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="regPass" placeholder="Create password" required />
-                    </div>
+                    <label for="regPass">Password</label>
+                    <input type="password" id="regPass" placeholder="Create password" maxlength="32" required>
                 </div>
                 <div class="group">
-                    <label for="regConfPass"><ion-icon name="shield-checkmark-outline"></ion-icon> Confirm Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="regConfPass" placeholder="Repeat password" required />
-                    </div>
+                    <label for="regConfPass">Confirm Password</label>
+                    <input type="password" id="regConfPass" placeholder="Repeat password" maxlength="32" required>
                 </div>
-                <p id="msg" style="text-align: center; font-size: 14px; margin-top: 10px;"></p>
+                <p id="msg" style="text-align: center; font-size: 14px; margin-top: 10px; font-weight: bold; min-height: 20px;"></p>
                 <button type="submit" class="btn">Register Now</button>
-                <p class="footer-link">Already have an account? <a href="user.htm">Log In</a></p>
             </form>
         </div>
     </div>
-    <script>
-        const registerForm = document.getElementById('registerForm');
-        const msg = document.getElementById('msg');
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            const confPass = document.getElementById('regConfPass').value;
-            if (pass !== confPass) {
-                msg.style.color = "orange";
-                msg.innerText = "❌ Passwords do not match!";
-                return;
-            }
-            try {
-                const response = await fetch('http://127.0.0', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: pass,
-                        name: name,
-                        username: email
-                    })
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    msg.style.color = "#28a745";
-                    msg.innerText = "✅ " + result.message;
-                    registerForm.reset();
-                } else {
-                    msg.style.color = "#ff4d4d";
-                    msg.innerText = "❌ " + result.error;
-                }
-            } catch (error) {
-                msg.style.color = "#ff4d4d";
-                msg.innerText = "❌ Server not running.";
-            }
-        });
-    </script>
+
+    <script src="script.js"></script>
 </body>
 </html>
