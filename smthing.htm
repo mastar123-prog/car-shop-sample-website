@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Doom</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --border: #334155;
+            --accent: #ff6600;
+            --green: #00ffcc;
+            --red: #ff3333;
+            --text: #f8fafc;
+            --strength: #ef4444;
+            --wisdom: #3b82f6;
+            --charisma: #f59e0b;
+        }
+        * { box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .game-wrapper { max-width: 650px; width: 100%; background: var(--panel); padding: 20px; border: 4px solid var(--border); box-shadow: 0 0 25px rgba(0,0,0,0.5); }
+        h1 { color: var(--accent); text-align: center; font-size: 24px; text-transform: uppercase; margin-top: 0; text-shadow: 0 0 8px var(--accent); }
+        
+        .hud { display: flex; justify-content: space-between; background: #000; padding: 12px; border: 2px solid var(--border); margin-bottom: 15px; font-weight: bold; font-size: 13px; }
+        .hud-v { color: #fff; } .green { color: var(--green); } .red { color: var(--red); } .orange { color: var(--accent); }
+
+        .card-container { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+        .blook-card { background: #111827; border: 3px solid #4b5563; width: 115px; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; cursor: pointer; position: relative; }
+        .blook-card:hover { border-color: var(--green); }
+        .blook-avatar { font-size: 28px; margin-bottom: 5px; }
+        .stat-line { display: flex; justify-content: space-between; margin: 2px 0; padding: 1px 3px; border-radius: 3px; font-weight: bold; color: #fff; }
+        .st-s { background: var(--strength); } .st-w { background: var(--wisdom); } .st-c { background: var(--charisma); }
+
+        .question-box { background: #000; padding: 15px; border: 2px solid var(--border); margin-bottom: 15px; min-height: 80px; font-size: 14px; line-height: 1.4; }
+        .options-box { display: flex; flex-direction: column; gap: 8px; }
+        .opt-btn { background: #2d0031; border: 2px solid var(--border); color: #fff; padding: 12px; text-align: left; cursor: pointer; font-size: 13px; width: 100%; }
+        .opt-btn:hover:not([disabled]) { border-color: var(--accent); background: #3d0a42; }
+        .correct { background: rgba(0,255,204,0.2) !important; border-color: var(--green) !important; color: var(--green); }
+        .wrong { background: rgba(255,51,51,0.2) !important; border-color: var(--red) !important; color: var(--red); }
+        
+        .attr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .attr-btn { padding: 12px; font-weight: bold; color: #fff; border: none; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+
+        .action-btn { width: 100%; background: #000; color: var(--accent); border: 2px solid var(--accent); padding: 14px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .action-btn:hover { background: var(--accent); color: #000; }
+        .hide { display: none; } .center { text-align: center; padding: 25px 0; }
+
+        .tray-panel { border-top: 2px dashed var(--border); margin-top: 15px; padding-top: 15px; }
+        .upgrade-btn { background: var(--accent); color: #000; border: none; padding: 4px; font-size: 9px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
+        .buy-card-btn { background: var(--green); color: #000; border: none; padding: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 5px; text-transform: uppercase; }
+        .face-down { min-height: 132px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-color: var(--accent); background: linear-gradient(135deg, #231942, #5e548e); }
+        .face-down .blook-avatar { font-size: 40px; }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <!-- SETUP DRAFT STAGE -->
+    <div id="draft-screen" class="center">
+        <h1>Hand Drafting</h1>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;" id="draft-progress">Completed Setup Answers: 0 / 5</p>
+        
+        <div id="draft-quiz-view">
+            <div class="question-box" id="draft-question">Loading database profiles...</div>
+            <div class="options-box" id="draft-options"></div>
+        </div>
+        
+        <div id="draft-choice-view" class="hide">
+            <p style="color: var(--accent); font-weight: bold; margin-bottom: 15px;">CHOOSE A BLOOK CARD FOR YOUR HAND:</p>
+            <div class="card-container" id="draft-cards-pool"></div>
+        </div>
+    </div>
+
+    <!-- MAIN BATTLE MODE -->
+    <div id="battle-screen" class="hide">
+        <h1>TOWER OF DOOM</h1>
+        <div class="hud">
+            <div class="hud-metric">ROOM: <span id="hud-floor" class="hud-v orange">1/30</span></div>
+            <div class="hud-metric">HP: <span id="hud-hp" class="hud-v red">100/100</span></div>
+            <div class="hud-metric">ENEMY: <span id="hud-ehp" class="hud-v red">40/40</span></div>
+            <div class="hud-metric">COINS: <span id="hud-gold" class="hud-v green">0</span></div>
+        </div>
+
+        <p style="font-size:12px; color:#a194b8; text-align:center; font-weight: bold; margin:0 0 10px 0;" id="battle-comms">Survive to ascend the magical Tower of Doom!</p>
+
+        <div style="display: flex; justify-content: space-around; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; align-items: center;">
+            <div style="text-align: center;"><p style="font-size:10px; margin:0 0 5px 0; color:#888;">YOUR CARD</p><div id="user-active-card-slot"></div></div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">VS</div>
+            <div style="text-align: center;"><p style="font-size:10px; margin:0 0 5px 0; color:#888;">ENEMY CARD</p><div id="enemy-card-slot"></div></div>
+        </div>
+
+        <div id="quiz-interaction-block">
+            <div class="question-box" id="battle-question">Loading chamber challenge...</div>
+            <div class="options-box" id="battle-options"></div>
+        </div>
+
+        <div id="attribute-select-block" class="hide">
+            <p style="text-align: center; color: var(--green); font-weight: bold; margin: 0 0 10px 0;">CORRECT! CHOOSE STRENGTH, WISDOM, OR CHARISMA:</p>
+            <div class="attr-grid">
+                <button class="attr-btn st-s" onclick="executeAttack('str')">STR</button>
+                <button class="attr-btn st-w" onclick="executeAttack('wis')">WIS</button>
+                <button class="attr-btn st-c" onclick="executeAttack('cha')">CHA</button>
+            </div>
+        </div>
+
+        <div id="combat-log" style="text-align:center; font-weight:bold; margin-top:15px; font-size:13px;"></div>
+        <div id="reward-choice-view" class="hide">
+            <p style="color: var(--accent); font-weight: bold; margin: 15px 0;">VICTORY REWARD: CHOOSE 1 CARD</p>
+            <div class="card-container" id="reward-cards-pool"></div>
+        </div>
+        <button id="next-floor-btn" class="action-btn hide">Ascend To Next Floor</button>
+
+        <!-- DECK DISPLAY -->
+        <div class="tray-panel">
+            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--accent); text-transform: uppercase;">Deck</h3>
+            <p style="font-size: 10px; color: #888; margin: 0 0 8px 0; text-align: center;">At the start of each battle, Tower of Doom picks one card from your deck at random.</p>
+            <div class="card-container" id="player-deck-tray"></div>
+        </div>
+    </div>
+
+    <!-- TERMINAL END SCREEN -->
+    <div id="end-screen" class="center hide">
+        <h2 id="end-title" style="color: var(--accent);">EXPEDITION TERMINATED</h2>
+        <p id="end-desc" style="font-size: 13px; line-height: 1.5; margin-bottom: 20px;"></p>
+        <button onclick="location.reload()" class="action-btn">Commence New Run</button>
+    </div>
+</div>
+
+<script>
+    const rawData = `
+What are the three parts of the Scout Oath?:Duty to God and country duty to others duty to self,Trustworthy loyal helpful,Scout sign salute handclasp,Be prepared do a good turn daily:Duty to God and country duty to others duty to self
+What does the Scout Sign signify with its three raised fingers?:The three parts of the Scout Oath,The three main ranks of Scouting,The three steps of outdoor ethics,The three branches of government:The three parts of the Scout Oath
+According to the Outdoor Code what is the first commitment you make?:As an American I will do my best to be clean in my outdoor manners,To always carry my pocketknife,To never build an open campfire,To follow the instructions of my Scoutmaster:As an American I will do my best to be clean in my outdoor manners
+Which knot is required for the Scout rank to join two ropes of equal diameter?:Square Knot,Two Half-Hitches,Taut-Line Hitch,Clove Hitch:Square Knot
+To earn your Totin Chip you must demonstrate safety rules for which three tools?:Pocketknife ax and saw,Matches flint and steel,Rope compass and map,Stove lantern and fuel:Pocketknife ax and saw
+To earn the Firemn Chip a Scout must demonstrate understanding of?:The safe building and extinguishing of campfires,How to survive a forest fire,First aid for third-degree burns,How to use a commercial fire extinguisher:The safe building and extinguishing of campfires
+Under Tenderfoot requirement 4a how should you treat a minor cut or scrape?:Wash with soap and water and apply a sterile bandage,Apply a tight tourniquet immediately,Rub dirt on it to stop the bleeding,Leave it open to the air to dry out:Wash with soap and water and apply a sterile bandage
+What is the proper first aid treatment for a minor thermal burn?:Hold it under cold running water,Apply butter or grease immediately,Pop any blisters that form,Wrap it tightly with a heavy wool cloth:Hold it under cold running water
+Which Tenderfoot knot is used to whip or fuse the ends of a rope to prevent fraying?:Fusing or whipping the rope ends,Tying a bowline knot,Making a square lashing,Creating a sheepshank:Fusing or whipping the rope ends
+Under Second Class requirement 1b how long must a Scout stay on a troop-approved campsite?:At least 2 nights,At least 5 nights,At least 1 night,At least 10 nights:At least 2 nights
+Under Second Class requirement 3a how do you look up a magnetic azimuth using a compass?:Orient the compass housing to the object and read the degree index,Hold the compass upside down,Point the arrow at the sun,Look through the compass magnifying glass:Orient the compass housing to the object and read the degree index
+How can you identify poison ivy by its leaves?:It always grows in clusters of three leaves,It has five jagged leaves,It has smooth round yellow leaves,It only grows on pine trees:It always grows in clusters of three leaves
+What is the primary sign of hypothermia in Second Class first aid?:Uncontrollable shivering,Extreme sweating,High fever,Rapid blistering of the skin:Uncontrollable shivering
+Which Second Class knot is best used to secure a tent guyline because it can slide to adjust tension?:Taut-Line Hitch,Two Half-Hitches,Timber Hitch,Square Knot:Taut-Line Hitch
+What is the standard distance a Scout must hike to fulfill First Class requirement 4a?:A 5-mile hike,A 10-mile hike,A 1-mile walk,A 20-mile backpacking trip:A 5-mile hike
+Under First Class navigation requirements what must you do to orient a map?:Align the grid lines with magnetic north using a compass,Turn the map upside down,Fold the map into four equal quadrants,Look for the closest highway:Align the grid lines with magnetic north using a compass
+Which lash is used to join two spars that cross at a 90-degree angle?:Square Lashing,Diagonal Lashing,Shear Lashing,Continuous Lashing:Square Lashing
+What is the compression-to-breath ratio for adult CPR under First Aid Merit Badge requirements?:30 compressions to 2 breaths,15 compressions to 1 breath,50 compressions to 5 breaths,10 compressions to 2 breaths:30 compressions to 2 breaths
+What is the first step in the BSA Safe Swim Defense policy?:Qualified Supervision,Physical Fitness,Buddy System,Safe Area:Qualified Supervision
+How many total service hours are required for the Star rank sign-off?:6 hours of service,3 hours of service,1 hour of service,12 hours of service:6 hours of service
+How many months must a Life Scout serve in an active leadership position before advancing?:6 months,3 months,4 months,12 months:6 months
+What must be approved by the council or district before an Eagle candidate can begin physical work?:The Eagle Scout Service Project Proposal,The Eagle Scout Rank Application,The entire merit badge lineup,The troop committee financial log:The Eagle Scout Service Project Proposal
+How many total merit badges are required to earn the rank of Eagle Scout?:21 merit badges,15 merit badges,18 merit badges,25 merit badges:21 merit badges
+Under Personal Management requirement 2 for how long must a Scout track their income and expenses?:13 consecutive weeks,1 week,6 months,1 full year:13 consecutive weeks
+According to Family Life requirements how long must a Scout track their home chores and duties?:90 days,7 days,30 days,6 months:90 days
+Under Citizenship in the Nation requirements what are the three branches of the United States government?:Legislative Executive Judicial,Presidential Congress Senate,Federal State Local,Military Legal Political:Legislative Executive Judicial
+Under Camping Merit Badge requirements which of these is considered one of the Scout Outdoor Essentials?:A flashlight or headlamp,A smartphone,A camp chair,A portable camp stove:A flashlight or headlamp
+Under Emergency Preparedness requirement 2c what are the three parts of the rescue triad?:Reach throw row go,Stop drop and roll,Find treat move,Call text email:Reach throw row go
+Under Swimming Merit Badge what is the purpose of the Safe Swim Defense buddy system?:To ensure every swimmer is paired up and accounted for every 10 minutes,To find out who swims the fastest,To help carry gear to the pool,To pass the deep water test:To ensure every swimmer is paired up and accounted for every 10 minutes
+Under Environmental Science requirement 3e what does a biweekly study of a 4-square-yard area track?:Changes in plant life animal signs and environmental impacts,The soil pH levels only,The total rainfall amount,The wind speed and direction:Changes in plant life animal signs and environmental impacts
+What are the four steps of the EDGE training method used for rank sign-offs?:Explain Demonstrate Guide Enable,Educate Direct Growth Evaluate,Encourage Demonstrate Give Energy,Examine Develop Guide Elevate:Explain Demonstrate Guide Enable
+What does the knot at the bottom of the First Class badge represent?:A reminder to Do a Good Turn Daily,The tie that binds the unit together,The completion of basic outdoor skills,The path toward the Eagle rank:A reminder to Do a Good Turn Daily
+Under Tenderfoot requirement 3c what is the correct way to pitch a tent?:On flat ground away from dead trees and water hazards,On top of a hill for maximum wind exposure,Directly under a large dead tree branch,In a dry riverbed for wind protection:On flat ground away from dead trees and water hazards
+What is the proper first aid treatment for a snakebite from a venomous snake?:Keep the victim calm immobilize the limb and seek immediate medical help,Cut the wound open and suck out the venom,Apply a tight tourniquet above the bite,Place a bag of crushed ice directly on the wound:Keep the victim calm immobilize the limb and seek immediate medical help
+Which knot is used to form a secure fixed loop at the end of a rope?:Bowline,Clove Hitch,Square Knot,Slipknot:Bowline
+Which lashing is used to form a sturdy tripod for a camp gadget?:Tripod Lashing,Square Lashing,Diagonal Lashing,Shear Lashing:Tripod Lashing
+Under Citizenship in the Community what document dictates the laws of your specific city or town?:The municipal charter,The Declaration of Independence,The United States Constitution,The state highway code:The municipal charter
+Under Communication Merit Badge what is a required component of planning a public speech?:Audience analysis and a clear outline,Using at least five visual props,Memorizing the text word for word,Speaking for at least forty-five minutes:Audience analysis and a clear outline
+What is a core principle of Leave No Trace regarding wildlife?:Respect wildlife and observe from a distance,Feed animals crumbs to help them survive winter,Get close to take high-quality photos,Capture small animals for camp observation:Respect wildlife and observe from a distance
+What is the minimum rank requirement for a Scout to serve as a Junior Assistant Scoutmaster?:Must be at least 16 years old and appointed by the Scoutmaster,Must be an Eagle Scout under 18,Must be a First Class Scout of any age,Must be a Life Scout who is 14 years old:Must be at least 16 years old and appointed by the Scoutmaster
+`.trim().split('\n');
+
+
+    const towerBlooks = [
+        { name: "Horse", avatar: "H" }, { name: "Pig", avatar: "P" }, { name: "Sheep", avatar: "S" },
+        { name: "Dog", avatar: "D" }, { name: "Cat", avatar: "C" }, { name: "Rabbit", avatar: "R" },
+        { name: "Goldfish", avatar: "G" }, { name: "Hamster", avatar: "H" }, { name: "Turtle", avatar: "T" },
+        { name: "Bear", avatar: "B" }, { name: "Fox", avatar: "F" }, { name: "Owl", avatar: "O" },
+        { name: "Tiger", avatar: "T" }, { name: "Parrot", avatar: "P" }, { name: "Wizard", avatar: "W" },
+        { name: "Fairy", avatar: "F" }, { name: "Slime Monster", avatar: "S" }, { name: "Jester", avatar: "J" },
+        { name: "Dragon", avatar: "D" }, { name: "Unicorn", avatar: "U" }, { name: "King", avatar: "K" }
+    ];
+    const towerEnemies = [
+        { name: "Evil Chicken", avatar: "C", hp: 25, min: 4, max: 10 },
+        { name: "Evil Dog", avatar: "D", hp: 28, min: 5, max: 12 },
+        { name: "Evil Cat", avatar: "C", hp: 32, min: 5, max: 13 },
+        { name: "Evil Pig", avatar: "P", hp: 40, min: 6, max: 14 },
+        { name: "Evil Bear", avatar: "B", hp: 45, min: 7, max: 15 },
+        { name: "Evil Witch", avatar: "W", hp: 55, min: 9, max: 17 },
+        { name: "Evil Slime Monster", avatar: "S", hp: 60, min: 9, max: 18 },
+        { name: "Evil Dragon", avatar: "D", hp: 65, min: 10, max: 19 }
+    ];
+    const towerBosses = [
+        { room: 10, name: "Evil Unicorn", avatar: "U", hp: 70, min: 12, max: 20 },
+        { room: 20, name: "Evil Santa Claus", avatar: "S", hp: 100, min: 14, max: 20 },
+        { room: 30, name: "Evil King", avatar: "K", hp: 150, min: 16, max: 20 }
+    ];
+    const maxRoom = 30;
+
+    let qaPool = [];
+    let playerDeck = [];
+    let activeCardIndex = 0;
+    let draftCount = 0;
+    let currentFloor = 1;
+    let userHp = 100;
+    let enemyHp = 40;
+    let coins = 0;
+    let streakOwner = null;
+    let streakCount = 1;
+    let currentEnemyCard = null;
+    let enemyRevealed = false;
+    let lastQuestionCorrect = false;
+
+    // REBUILT DATABASE LOADER (Uses safe, absolute explicit array indexes)
+    rawData.forEach(line => {
+        const parts = line.split(':');
+        if(parts.length >= 3) {
+            const rawQuestion = parts[0];
+            const rawOptions = parts[1].split(',');
+            const rawAnswer = parts[2];
+            qaPool.push({
+                q: rawQuestion,
+                opts: rawOptions,
+                a: rawAnswer
+            });
+        }
+    });
+
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    
+    function generateBlookCard() {
+        const blook = towerBlooks[rand(0, towerBlooks.length - 1)];
+        return {
+            name: blook.name,
+            avatar: blook.avatar,
+            str: rand(5, 16),
+            wis: rand(5, 16),
+            cha: rand(5, 16)
+        };
+    }
+
+    function renderFaceDownCardHtml() {
+        return `
+            <div class="blook-card face-down">
+                <div class="blook-avatar">?</div>
+                <div style="font-weight:bold;margin-bottom:5px;font-size:10px;">Face Down</div>
+            </div>`;
+    }
+
+    function renderCardHtml(card, index = null) {
+        if(!card) return "";
+        let upgradeBtnHtml = "";
+        return `
+            <div class="blook-card">
+                <div class="blook-avatar">${card.avatar}</div>
+                <div style="font-weight:bold;margin-bottom:5px;font-size:10px;">${card.name}</div>
+                <div class="stat-line st-s"><span>STR</span><span>${card.str}</span></div>
+                <div class="stat-line st-w"><span>WIS</span><span>${card.wis}</span></div>
+                <div class="stat-line st-c"><span>CHA</span><span>${card.cha}</span></div>
+                ${upgradeBtnHtml}
+            </div>`;
+    }
+
+    // --- DRAFT SELECTION HANDLERS ---
+    function initDraftQuiz() {
+        if(draftCount >= 5) {
+            document.getElementById('draft-screen').classList.add('hide');
+            document.getElementById('battle-screen').classList.remove('hide');
+            spawnEnemy();
+            loadBattleQuestion();
+            return;
+        }
+        document.getElementById('draft-progress').innerText = `Completed Setup Answers: ${draftCount} / 5`;
+        const item = qaPool[rand(0, qaPool.length - 1)];
+        document.getElementById('draft-question').innerText = item.q;
+        const optsBox = document.getElementById('draft-options');
+        optsBox.innerHTML = "";
+        
+        item.opts.forEach(o => {
+            const btn = document.createElement('button');
+            btn.classList.add('opt-btn');
+            btn.innerText = o;
+            btn.onclick = () => {
+                optsBox.querySelectorAll('button').forEach(b => b.disabled = true);
+                draftCount++;
+                document.getElementById('draft-progress').innerText = `Completed Setup Answers: ${draftCount} / 5`;
+                displayDraftRewards();
+            };
+            optsBox.appendChild(btn);
+        });
+    }
+
+    function displayDraftRewards() {
+        document.getElementById('draft-quiz-view').classList.add('hide');
+        document.getElementById('draft-choice-view').classList.remove('hide');
+        const poolDiv = document.getElementById('draft-cards-pool');
+        poolDiv.innerHTML = "";
+
+        const choices = [generateBlookCard(), generateBlookCard(), generateBlookCard()];
+        choices.forEach(card => {
+            const container = document.createElement('div');
+            container.innerHTML = renderCardHtml(card);
+            const cardElement = container.firstElementChild;
+            cardElement.onclick = () => {
+                playerDeck.push(card);
+                document.getElementById('draft-choice-view').classList.add('hide');
+                document.getElementById('draft-quiz-view').classList.remove('hide');
+                initDraftQuiz();
+            };
+            poolDiv.appendChild(cardElement);
+        });
+    }
+
+    // --- MAIN CORE BATTLE CONTROLLERS ---
+    function spawnEnemy() {
+        activeCardIndex = rand(0, playerDeck.length - 1);
+        const boss = towerBosses.find(item => item.room === currentFloor);
+        const enemyTemplate = boss || towerEnemies[rand(0, towerEnemies.length - 1)];
+        const roomBonus = Math.floor(currentFloor / 6);
+        currentEnemyCard = {
+            name: enemyTemplate.name,
+            avatar: enemyTemplate.avatar,
+            str: Math.min(20, rand(enemyTemplate.min, enemyTemplate.max) + roomBonus),
+            wis: Math.min(20, rand(enemyTemplate.min, enemyTemplate.max) + roomBonus),
+            cha: Math.min(20, rand(enemyTemplate.min, enemyTemplate.max) + roomBonus)
+        };
+        enemyHp = enemyTemplate.hp;
+        enemyRevealed = false;
+        streakOwner = null;
+        streakCount = 1;
+        document.getElementById('battle-comms').innerText = boss ? `${enemyTemplate.name} blocks the end of this map!` : `${enemyTemplate.name} appears in the Tower of Doom.`;
+        updateHud();
+        renderTray();
+        renderTray();
+    }
+
+    function renderTray() {
+        document.getElementById('enemy-card-slot').innerHTML = enemyRevealed ? renderCardHtml(currentEnemyCard) : renderFaceDownCardHtml();
+        document.getElementById('user-active-card-slot').innerHTML = renderCardHtml(playerDeck[activeCardIndex]);
+        
+        const tray = document.getElementById('player-deck-tray');
+        tray.innerHTML = "";
+        playerDeck.forEach((card, idx) => {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = renderCardHtml(card, idx);
+            const cardElement = wrap.firstElementChild;
+            if(idx === activeCardIndex) {
+                cardElement.style.borderColor = "var(--accent)";
+                cardElement.style.boxShadow = "0 0 8px var(--accent)";
+            }
+            tray.appendChild(cardElement);
+        });
+    }
+
+    function updateHud() {
+        document.getElementById('hud-floor').innerText = `${currentFloor} / ${maxRoom}`;
+        document.getElementById('hud-hp').innerText = `${userHp} / 100`;
+        document.getElementById('hud-ehp').innerText = `${enemyHp} HP`;
+        document.getElementById('hud-gold').innerText = coins;
+    }
+
+    function setActiveFighter(index) {
+        activeCardIndex = index;
+        document.getElementById('battle-comms').innerText = `Switched field lead to ${playerDeck[activeCardIndex].name}!`;
+        renderTray();
+    }
+
+    function upgradeCard(index) {
+        if(gold >= 25) {
+            gold -= 25;
+            playerDeck[index].str = Math.min(20, playerDeck[index].str + 2);
+            playerDeck[index].wis = Math.min(20, playerDeck[index].wis + 2);
+            playerDeck[index].cha = Math.min(20, playerDeck[index].cha + 2);
+            document.getElementById('battle-comms').innerText = `Upgraded ${playerDeck[index].name} statistics by +2!`;
+            updateHud();
+            renderTray();
+        } else {
+            alert("Insufficient Gold! Need 25 Gold to upgrade cards.");
+        }
+    }
+
+    function buyCardFromShop() {
+        if(coins >= 40) {
+            coins -= 40;
+            const newCard = generateBlookCard();
+            playerDeck.push(newCard);
+            document.getElementById('battle-comms').innerText = `Recruited ${newCard.name} directly into your active card deck!`;
+            updateHud();
+            renderTray();
+        } else {
+            alert("Insufficient coins! Need 40 coins to purchase a character card.");
+        }
+    }
+
+    function displayBattleRewards() {
+        document.getElementById('quiz-interaction-block').classList.add('hide');
+        document.getElementById('attribute-select-block').classList.add('hide');
+        const rewardView = document.getElementById('reward-choice-view');
+        const poolDiv = document.getElementById('reward-cards-pool');
+        rewardView.classList.remove('hide');
+        poolDiv.innerHTML = "";
+
+        const choices = [generateBlookCard(), generateBlookCard(), generateBlookCard()];
+        choices.forEach(card => {
+            const container = document.createElement('div');
+            container.innerHTML = renderCardHtml(card);
+            const cardElement = container.firstElementChild;
+            cardElement.onclick = () => {
+                playerDeck.push(card);
+                rewardView.classList.add('hide');
+                document.getElementById('next-floor-btn').classList.remove('hide');
+                renderTray();
+            };
+            poolDiv.appendChild(cardElement);
+        });
+    }
+
+    function loadBattleQuestion() {
+        document.getElementById('quiz-interaction-block').classList.remove('hide');
+        document.getElementById('attribute-select-block').classList.add('hide');
+        document.getElementById('reward-choice-view').classList.add('hide');
+        document.getElementById('combat-log').innerText = "";
+        
+        const item = qaPool[rand(0, qaPool.length - 1)];
+        document.getElementById('battle-question').innerText = item.q;
+        const optsBox = document.getElementById('battle-options');
+        optsBox.innerHTML = "";
+
+        item.opts.forEach(o => {
+            const btn = document.createElement('button');
+            btn.classList.add('opt-btn');
+            btn.innerText = o;
+            btn.onclick = () => {
+                optsBox.querySelectorAll('button').forEach(b => b.disabled = true);
+                if(o.trim() === item.a.trim()) {
+                    btn.classList.add('correct');
+                    lastQuestionCorrect = true;
+                    document.getElementById('quiz-interaction-block').classList.add('hide');
+                    document.getElementById('attribute-select-block').classList.remove('hide');
+                } else {
+                    btn.classList.add('wrong');
+                    lastQuestionCorrect = false;
+                    let enemyBestAttr = 'str';
+                    if(currentEnemyCard.wis > currentEnemyCard[enemyBestAttr]) enemyBestAttr = 'wis';
+                    if(currentEnemyCard.cha > currentEnemyCard[enemyBestAttr]) enemyBestAttr = 'cha';
+                    setTimeout(() => executeAttack(enemyBestAttr), 1200);
+                }
+            };
+            optsBox.appendChild(btn);
+        });
+    }
+
+    function executeAttack(attr) {
+        document.getElementById('attribute-select-block').classList.add('hide');
+        const pCard = playerDeck[activeCardIndex];
+        const eCard = currentEnemyCard;
+        enemyRevealed = true;
+        renderTray();
+        
+        const playerVal = pCard[attr];
+        const enemyVal = eCard[attr];
+        const log = document.getElementById('combat-log');
+        const diff = Math.abs(playerVal - enemyVal);
+
+        if(playerVal > enemyVal) {
+            streakCount = streakOwner === "player" ? streakCount + 1 : 1;
+            streakOwner = "player";
+            const dmg = diff * streakCount;
+            enemyHp -= dmg;
+            log.innerHTML = `<span class="green">${pCard.name}'s ${attr.toUpperCase()} beat ${eCard.name}'s card by ${diff}. Enemy loses ${dmg} HP. Streak x${streakCount}.</span>`;
+        } else if(enemyVal > playerVal) {
+            streakCount = streakOwner === "enemy" ? streakCount + 1 : 1;
+            streakOwner = "enemy";
+            const dmg = diff * streakCount;
+            userHp -= dmg;
+            log.innerHTML = `<span class="red">${eCard.name}'s ${attr.toUpperCase()} beat your card by ${diff}. You lose ${dmg} HP. Enemy streak x${streakCount}.</span>`;
+        } else {
+            streakOwner = null;
+            streakCount = 1;
+            log.innerHTML = `<span class="orange">Both cards had ${playerVal} ${attr.toUpperCase()}. No damage.</span>`;
+        }
+
+        updateHud();
+
+        if(userHp <= 0) {
+            terminateGame(false);
+        } else if(enemyHp <= 0) {
+            const reward = currentFloor % 10 === 0 ? rand(35, 55) : rand(10, 25);
+            coins += reward;
+            updateHud();
+            log.innerHTML += `<br><span class="orange">${eCard.name} defeated. You gain ${reward} coins and may choose a new card.</span>`;
+            displayBattleRewards();
+        } else {
+            setTimeout(loadBattleQuestion, 2000);
+        }
+    }
+
+    document.getElementById('next-floor-btn').addEventListener('click', () => {
+        document.getElementById('next-floor-btn').classList.add('hide');
+        currentFloor++;
+        if(currentFloor > maxRoom) {
+            terminateGame(true);
+        } else {
+            spawnEnemy();
+            loadBattleQuestion();
+        }
+    });
+
+    function terminateGame(win) {
+        document.getElementById('battle-screen').classList.add('hide');
+        const end = document.getElementById('end-screen');
+        end.classList.remove('hide');
+        
+        if(win) {
+            document.getElementById('end-title').innerText = "👑 CITADEL CONQUERED";
+            document.getElementById('end-title').style.color = "var(--green)";
+            document.getElementById('end-title').innerText = "TOWER CONQUERED";
+            document.getElementById('end-desc').innerText = `Victory! You defeated the Evil King and escaped the Tower of Doom with ${coins} coins.`;
+        } else {
+            document.getElementById('end-title').innerText = "💀 EXPEDITION FAILED";
+            document.getElementById('end-title').style.color = "var(--red)";
+            document.getElementById('end-title').innerText = "RUN FAILED";
+            document.getElementById('end-desc').innerText = `You ran out of HP in room ${currentFloor} of ${maxRoom}. Build a better deck and try the tower again.`;
+        }
+    }
+
+    // Launch pipeline setup initialization loop
+    initDraftQuiz();
+</script>
+</body>
+</html>

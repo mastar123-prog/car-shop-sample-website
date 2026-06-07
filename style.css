@@ -1,0 +1,234 @@
+/* 1 ORIGINAL CORE & VARIABLES */
+:root {
+    --blue: #0033ff;
+    --light-blue: #1e8fff;
+    --neon: #0051ff;
+    --bg-glass: rgba(0, 0, 0, 0.8);
+    --border: rgba(30, 143, 255, 0.3);
+}
+
+.myfont, body {
+    font-family: 'Playwrite US Modern', serif;
+}
+
+body {
+    background: #000 url('futuristic-black-glowing-car-desktop-wallpaper-preview.jpg') no-repeat center center fixed;
+    
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    color: whitesmoke;
+}
+
+/* 2 ORIGINAL NAVBAR */
+.navbar {
+    background: rgba(20, 20, 20, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+}
+
+.navbar ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar a {
+    color: white;
+    padding: 15px 18px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.navbar a:hover {
+    background: var(--blue);
+}
+
+.navbar ion-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+
+/* 3 UPDATED LAYOUT & GRID */
+.container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: var(--bg-glass);
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    backdrop-filter: blur(15px);
+}
+
+.title-box {
+    text-align: center;
+    background: var(--border);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.item:hover {
+    transform: translateY(-5px);
+    border-color: var(--blue);
+}
+
+/* 4 ORIGINAL FORMS & TABLES */
+.group, .input-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--light-blue);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    box-sizing: border-box;
+}
+
+.btn-order, .btn {
+    width: 100%;
+    background: var(--blue);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.btn-order:hover, .btn:hover {
+    background: #001bb5;
+}
+
+/* 5 EXTRA STUFF */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--light-blue);
+    display: flex;
+    align-items: center;
+}
+
+#userGreeting {
+    color: var(--neon);
+    font-weight: bold;
+}
+
+.btn-logout {
+    display: block;
+    margin: 10px auto; 
+    background: none;
+    border: 1px solid rgb(253, 0, 0);
+    color: rgb(255, 0, 0);
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.btn-logout:hover {
+    background: rgb(253, 0, 0);
+    color: white;
+}
+
+/* 6 UPDATED DECOR & BUTTON CENTERING */
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-color: lightskyblue;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.button-center {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.price-tag {
+    background: var(--blue) !important;
+    color: white !important;
+    padding: 10px 25px;
+    border-radius: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+    border: 1px solid var(--neon);
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+
+.price-tag:hover {
+    background: var(--neon) !important;
+    color: black !important;
+    box-shadow: 0 0 20px var(--neon);
+}

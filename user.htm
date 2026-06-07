@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <style>
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinner-icon { display: none; animation: spin 1s linear infinite; margin-left: 10px; vertical-align: middle; }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="index.htm"><ion-icon name="home-outline"></ion-icon> Home</a></li>
+            <li><a href="gear.htm"><ion-icon name="pricetags-outline"></ion-icon> Prices</a></li>
+            <li><a href="shipping.htm"><ion-icon name="rocket-outline"></ion-icon> Shipping</a></li>
+            <li><a href="works.htm"><ion-icon name="construct-outline"></ion-icon> How It Works</a></li>
+            <li><a href="tech.htm"><ion-icon name="flash-outline"></ion-icon> Tech Gear</a></li>
+            <li><a href="contact.htm"><ion-icon name="mail-outline"></ion-icon> Contact</a></li>
+            <li><a href="user.htm"><ion-icon name="person-circle-outline"></ion-icon> Log In</a></li>
+            <li><a href="register.htm"><ion-icon name="person-add-outline"></ion-icon> Register</a></li>
+            <li><a href="order.htm"><ion-icon name="cart-outline"></ion-icon> Order</a></li>
+            <li><a href="Get-a-new-password.htm"><ion-icon name="key-outline"></ion-icon> Reset</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="card">
+            <h1>Master Car Accessories</h1>
+            <form id="loginForm">
+                <div class="group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="group">
+                    <label for="loginPass">Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="loginPass" required>
+                        <button type="button" class="toggle-password" data-target="loginPass">
+                            <ion-icon name="eye-outline"></ion-icon>
+                        </button>
+                    </div>
+                </div>
+                <div class="group" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="checkbox" id="rememberMe" style="width: auto;">
+                        <label for="rememberMe" style="font-size: 0.9rem;">Remember Me</label>
+                    </div>
+                    <a href="Get-a-new-password.htm" style="font-size: 0.85rem; color: #555;">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">
+                    <span id="btnText">Sign In</span>
+                    <ion-icon id="spinner" name="reload-outline" class="spinner-icon"></ion-icon>
+                </button>
+                <p><a href="register.htm">Create Account</a></p>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+            const emailValue = document.getElementById('loginEmail').value;
+            const passValue = document.getElementById('loginPass').value;
+
+            btn.disabled = true;
+            text.textContent = "Checking...";
+            spinner.style.display = "inline-block";
+
+            try {
+                const response = await fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: emailValue, 
+                        password: passValue,
+                        name: "", 
+                        username: emailValue 
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert("Welcome back!");
+                    window.location.href = "index.htm";
+                } else {
+                    alert(data.error || "Login failed");
+                }
+            } catch (err) {
+                alert("Server connection failed.");
+            } finally {
+                btn.disabled = false;
+                text.textContent = "Sign In";
+                spinner.style.display = "none";
+            }
+        });
+
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const input = document.getElementById(this.getAttribute('data-target'));
+            const icon = this.querySelector('ion-icon');
+            input.type = input.type === "password" ? "text" : "password";
+            icon.name = input.type === "password" ? "eye-outline" : "eye-off-outline";
+        });
+    </script>
+</body>
+</html>

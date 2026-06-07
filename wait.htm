@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser SQLite Demo</title>
+    <!-- Load sql.js from a CDN -->
+    <script src="https://cloudflare.com"></script>
+</head>
+<body>
+    <h3>SQLite in Browser (No Prerequisites)</h3>
+    <button onclick="runDatabase()">1. Run Query & Save</button>
+    <div id="output"></div>
+
+    <script>
+        async function runDatabase() {
+            const output = document.getElementById('output');
+            
+            // Initialize sql.js
+            const config = {
+                locateFile: file => `https://cloudflare.com{file}`
+            };
+            const SQL = await initSqlJs(config);
+
+            // Create a new in-memory database
+            const db = new SQL.Database();
+
+            // Execute SQL commands
+            db.run("CREATE TABLE users (id INT, name TEXT);");
+            db.run("INSERT INTO users VALUES (1, 'Alice'), (2, 'Bob');");
+
+            // Perform a SELECT query
+            const res = db.exec("SELECT * FROM users;");
+            output.innerText = "Query Result: " + JSON.stringify(res[0].values);
+
+            // Export the database to a binary array
+            const binaryArray = db.export();
+
+            // Trigger a download to Disk
+            const blob = new Blob([binaryArray], { type: 'application/x-sqlite3' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'my_database.sqlite';
+            link.click();
+            
+            output.innerText += "\n\nDatabase downloaded as 'my_database.sqlite'";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+/* --- Global Reset & Background --- */
+body {
+    font-family: "Playwrite US Modern", serif;
+    background: #000 url('futuristic-black-glowing-car-desktop-wallpaper-preview.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    color: whitesmoke;
+}
+
+/* --- Layout Containers --- */
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    border: 1px solid rgba(30, 143, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+h1, h3 {
+    text-align: center;
+    background: rgba(30, 143, 255, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+    background-color: rgba(51, 51, 51, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.navbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.navbar a {
+    display: block;
+    color: white;
+    padding: 14px 18px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.navbar a:hover {
+    background-color: #0033ff;
+}
+
+.navbar a ion-icon {
+    vertical-align: middle;
+    margin-right: 5px;
+    font-size: 1.2em;
+}
+
+/* --- Forms & Inputs --- */
+.input-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #1e8fff;
+}
+
+label ion-icon {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: rgba(255,255,255,0.05);
+    color: white;
+    box-sizing: border-box;
+}
+
+input:focus {
+    border-color: #0033ff;
+    outline: none;
+    background: rgba(255,255,255,0.1);
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    width: 100%;
+    background: #0033ff;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+}
+
+.btn-primary:hover {
+    background: #001bb5;
+    transform: scale(1.02);
+}
+
+/* --- Special Sections --- */
+.catchtapa-container {
+    background: rgba(30, 143, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px dashed #1e8fff;
+    text-align: center;
+    margin: 20px 0;
+}
+
+#captcha-question {
+    font-weight: bold;
+    color: #00ffcc;
+}

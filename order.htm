@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="wheel.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <link href="script.JS" rel="script" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <ul>
+        <li>
+          <a href="index.htm"><ion-icon name="home-outline"></ion-icon> Home</a>
+        </li>
+        <li>
+          <a href="gear.htm"
+            ><ion-icon name="pricetags-outline"></ion-icon> Prices</a
+          >
+        </li>
+        <li>
+          <a href="shipping.htm"
+            ><ion-icon name="rocket-outline"></ion-icon> Shipping</a
+          >
+        </li>
+        <li>
+          <a href="works.htm"
+            ><ion-icon name="construct-outline"></ion-icon> How It Works</a
+          >
+        </li>
+        <li>
+          <a href="tech.htm"
+            ><ion-icon name="flash-outline"></ion-icon> Tech Gear</a
+          >
+        </li>
+        <li>
+          <a href="contact.htm"
+            ><ion-icon name="mail-outline"></ion-icon> Contact</a
+          >
+        </li>
+        <li>
+          <a href="user.htm"
+            ><ion-icon name="person-circle-outline"></ion-icon> Log In</a
+          >
+        </li>
+        <li>
+          <a href="register.htm"
+            ><ion-icon name="person-add-outline"></ion-icon> Register</a
+          >
+        </li>
+        <li>
+          <a href="order.htm"
+            ><ion-icon name="cart-outline"></ion-icon> Order</a
+          >
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container">
+      <div class="card">
+        <div class="title-box">
+          <h2><ion-icon name="cart-outline"></ion-icon> Finalize Your Order</h2>
+        </div>
+
+        <form id="orderForm">
+          <div class="group">
+            <label for="orderUser"
+              ><ion-icon name="shield-half-sharp"></ion-icon> Account
+              Username</label
+            >
+            <input
+              type="text"
+              id="orderUser"
+              placeholder="Enter username"
+              required
+            />
+          </div>
+
+          <div class="group">
+            <label for="orderPass"
+              ><ion-icon name="lock-closed-outline"></ion-icon> Account
+              Password</label
+            >
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="orderPass"
+                placeholder="Confirm password to buy"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                data-target="orderPass"
+              >
+                <ion-icon name="eye-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="group">
+            <label for="partSelect"
+              ><ion-icon name="build-outline"></ion-icon> Select
+              Accessory</label
+            >
+            <select id="partSelect" required>
+              <option value="">-- Click to Select --</option>
+              <option value="890">Multimedia Screen - $890</option>
+              <option value="450">Wheel - $450</option>
+              <option value="200">Tire - $200</option>
+              <option value="150">Steering Wheel - $150</option>
+              <option value="300">Seat Cover - $300</option>
+              <option value="500">Mud Flap Set - $500</option>
+              <option value="375">Windshield - $375</option>
+              <option value="450">Back Windshield - $450</option>
+              <option value="300">Side Window - $300</option>
+              <option value="900">Roof Window - $900</option>
+              <option value="15">Window Cover - $15 to $110</option>
+              <option value="35">Organizer - $35</option>
+              <option value="45">Cup Holder - $45</option>
+              <option value="30">Phone Holder - $30</option>
+            </select>
+          </div>
+
+          <div class="group">
+            <label for="address"
+              ><ion-icon name="bus-outline"></ion-icon> Shipping Address</label
+            >
+            <textarea
+              id="address"
+              rows="2"
+              placeholder="Full street address..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="group">
+            <label for="orderCard"
+              ><ion-icon name="card-outline"></ion-icon> Credit Card
+              Number</label
+            >
+            <div class="input-wrapper">
+              <input
+                type="password"
+                id="orderCard"
+                placeholder="Confirm Credit Card Number"
+                required
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                data-target="orderCard"
+              >
+                <ion-icon name="eye-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="group bot-check">
+            <label id="captchaQuestion">Bot Check: Calculating...</label>
+            <input type="number" id="captchaInput" placeholder="?" required />
+          </div>
+
+          <button type="submit" class="btn">Process Order</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
