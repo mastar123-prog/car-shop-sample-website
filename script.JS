@@ -3,13 +3,17 @@ const API_BASE_URL = "http://localhost:5000";
 function getStoredSession() {
     const isAuth = localStorage.getItem("isLoggedIn") === "true" || sessionStorage.getItem("isLoggedIn") === "true";
     const name = localStorage.getItem("userName") || sessionStorage.getItem("userName") || "Guest";
-    return { isAuth, name };
+    const username = localStorage.getItem("username") || sessionStorage.getItem("username") || "";
+    const email = localStorage.getItem("userEmail") || sessionStorage.getItem("userEmail") || "";
+    return { isAuth, name, username, email };
 }
 
-function startSession(userName, remember) {
+function startSession(userName, remember, username = "", email = "") {
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem("isLoggedIn", "true");
     storage.setItem("userName", userName || "User");
+    storage.setItem("username", username || email || userName || "User");
+    storage.setItem("userEmail", email || "");
     alert(`Welcome, ${userName || "User"}!`);
     window.location.href = "index.htm";
 }
@@ -17,8 +21,12 @@ function startSession(userName, remember) {
 function logout() {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userName");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userEmail");
     sessionStorage.removeItem("isLoggedIn");
     sessionStorage.removeItem("userName");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("userEmail");
     window.location.href = "user.htm";
 }
 
@@ -43,6 +51,10 @@ function setupCaptcha() {
     const num2 = Math.floor(Math.random() * 10) + 1;
     captchaLabel.innerText = `Bot Check: What is ${num1} + ${num2}?`;
     return num1 + num2;
+}
+
+function selectedOptionText(select) {
+    return select?.options[select.selectedIndex]?.textContent?.trim() || "";
 }
 
 function setupPasswordToggles() {
@@ -74,7 +86,7 @@ async function login(email, password, rememberMe) {
         try {
             const localUser = JSON.parse(localUserJson);
             if (localUser.pass === password) {
-                startSession(localUser.name || normalizedEmail, rememberMe);
+                startSession(localUser.name || normalizedEmail, rememberMe, localUser.username || normalizedEmail, normalizedEmail);
                 return;
             }
         } catch (error) {
@@ -98,7 +110,7 @@ async function login(email, password, rememberMe) {
             return;
         }
 
-        startSession(result.name || result.user || normalizedEmail, rememberMe);
+        startSession(result.name || result.user || normalizedEmail, rememberMe, result.user || normalizedEmail, result.email || normalizedEmail);
     } catch (error) {
         console.error("Database connection error:", error);
         alert("Login server is not running, and no matching local account was found.");
@@ -197,6 +209,7 @@ function setupRegisterForm(correctSum) {
         const user = {
             name,
             email,
+            username: email.split("@")[0],
             pass
         };
 
@@ -230,6 +243,134 @@ function setupRegisterForm(correctSum) {
     });
 }
 
+function setupOrderForm(correctSum) {
+    const orderForm = document.getElementById("orderForm");
+    if (!orderForm) {
+        return;
+    }
+
+    const session = getStoredSession();
+    const usernameInput = document.getElementById("orderUser");
+    const message = document.getElementById("orderMessage");
+
+    if (usernameInput && session.username) {
+        usernameInput.value = session.username;
+    }
+
+    orderForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const username = usernameInput.value.trim();
+        const password = document.getElementById("orderPass").value;
+        const partSelect = document.getElementById("partSelect");
+        const shippingSelect = document.getElementById("shippingMethod");
+        const address = document.getElementById("address").value.trim();
+        const cardNumber = document.getElementById("orderCard").value.trim();
+        const captchaInput = document.getElementById("captchaInput");
+
+        if (Number(captchaInput?.value) !== correctSum) {
+            setMessage(message, "Bot check answer is incorrect.", "orange");
+            return;
+        }
+
+        const itemText = selectedOptionText(partSelect).replace(/\s+-\s+\$\d+.*/, "");
+        const submitButton = orderForm.querySelector("button[type='submit']");
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = "Processing...";
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/orders`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username,
+                    password,
+                    item: itemText,
+                    price: partSelect.value,
+                    shipping_method: shippingSelect.value,
+                    address,
+                    card_number: cardNumber
+                })
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                setMessage(message, result.error || "Order could not be processed.", "#ff4d4d");
+                return;
+            }
+
+            const trackingId = result.order.tracking_id;
+            localStorage.setItem("lastTrackingId", trackingId);
+            setMessage(message, `Order placed! Tracking number: ${trackingId}`, "#1e8fff");
+            orderForm.reset();
+            if (usernameInput && session.username) {
+                usernameInput.value = session.username;
+            }
+        } catch (error) {
+            console.error("Order server error:", error);
+            setMessage(message, "Order server is not running. Start app.py and try again.", "#ff4d4d");
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = "Process Order";
+            }
+        }
+    });
+}
+
+function setupTrackerForm() {
+    const trackerForm = document.getElementById("trackerForm");
+    if (!trackerForm) {
+        return;
+    }
+
+    const input = document.getElementById("trackingId");
+    const result = document.getElementById("trackingResult");
+    const lastTrackingId = localStorage.getItem("lastTrackingId");
+    if (input && lastTrackingId) {
+        input.value = lastTrackingId;
+    }
+
+    trackerForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const trackingId = input.value.trim();
+
+        if (!trackingId) {
+            result.innerHTML = "<p>Please enter a tracking number.</p>";
+            return;
+        }
+
+        result.innerHTML = "<p>Checking package...</p>";
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(trackingId)}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                result.innerHTML = `<p class="error-text">${data.error || "Tracking number not found."}</p>`;
+                return;
+            }
+
+            const order = data.order;
+            result.innerHTML = `
+                <div class="tracking-card">
+                    <h3>${order.status}</h3>
+                    <p><strong>Tracking:</strong> ${order.tracking_id}</p>
+                    <p><strong>Item:</strong> ${order.item} - $${order.price}</p>
+                    <p><strong>Shipping:</strong> ${order.shipping_method}</p>
+                    <p><strong>Ordered:</strong> ${order.created_at}</p>
+                    <p><strong>Estimated delivery:</strong> ${order.estimated_delivery}</p>
+                </div>
+            `;
+        } catch (error) {
+            console.error("Tracking server error:", error);
+            result.innerHTML = "<p class=\"error-text\">Tracking server is not running. Start app.py and try again.</p>";
+        }
+    });
+}
+
 function setupAuthGreeting() {
     const greeting = document.getElementById("userGreeting");
     const { isAuth, name } = getStoredSession();
@@ -238,7 +379,7 @@ function setupAuthGreeting() {
         greeting.innerText = isAuth ? name : "Guest";
     }
 
-    const protectedPages = ["index.htm", "order.htm", "shipping.htm"];
+    const protectedPages = ["index.htm", "order.htm", "shipping.htm", "tracking.htm"];
     const currentPage = window.location.pathname.split("/").pop() || "index.htm";
     if (protectedPages.includes(currentPage) && !isAuth) {
         window.location.href = "user.htm";
@@ -250,5 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupPasswordToggles();
     setupLoginForm();
     setupRegisterForm(correctSum);
+    setupOrderForm(correctSum);
+    setupTrackerForm();
     setupAuthGreeting();
 });

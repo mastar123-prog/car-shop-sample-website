@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store</title>
+    <title>Package Tracker - Master Car Accessories</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="wheel.png">
     <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
@@ -29,27 +29,22 @@
     <div class="container">
         <div class="card">
             <div class="title-box">
-                <h1><ion-icon name="cpu-outline"></ion-icon> High-Tech Accessories</h1>
+                <h1><ion-icon name="navigate-outline"></ion-icon> Package Tracker</h1>
+                <p>Check the latest status for your accessory order.</p>
             </div>
 
-            <div class="grid">
-                <div class="item">
-                    <ion-icon name="tv-outline" style="font-size: 4em; color: #0033ff;"></ion-icon>
-                    <h3>Multimedia Screen</h3>
-                    <p>$890</p>
-                    <p>4K ultra-thin wired display with Apple CarPlay and Android Auto support plus an anti-glare finish for night driving.</p>
-                    <p><a href="order.htm">Order now</a></p>
+            <form id="trackerForm">
+                <div class="group">
+                    <label for="trackingId">Tracking Number</label>
+                    <input type="text" id="trackingId" placeholder="MCA-1234ABCD" required>
                 </div>
+                <button type="submit" class="btn">Track Package</button>
+            </form>
 
-                <div class="item">
-                    <ion-icon name="aperture-outline" style="font-size: 4em; color: #0033ff;"></ion-icon>
-                    <h3>Universal Mounts</h3>
-                    <p>$200</p>
-                    <p>Industrial-grade hooks and magnetic mounts designed to keep larger displays stable on rough roads.</p>
-                    <p><a href="order.htm">Order now</a></p>
-                </div>
-            </div>
+            <div id="trackingResult" class="tracking-result"></div>
         </div>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

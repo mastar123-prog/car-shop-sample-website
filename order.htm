@@ -15,7 +15,6 @@
       type="module"
       src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
     ></script>
-    <link href="script.JS" rel="script" />
   </head>
   <body>
     <nav class="navbar">
@@ -61,6 +60,16 @@
         <li>
           <a href="order.htm"
             ><ion-icon name="cart-outline"></ion-icon> Order</a
+          >
+        </li>
+        <li>
+          <a href="tracking.htm"
+            ><ion-icon name="navigate-outline"></ion-icon> Track</a
+          >
+        </li>
+        <li>
+          <a href="Get-a-new-password.htm"
+            ><ion-icon name="key-outline"></ion-icon> Reset</a
           >
         </li>
       </ul>
@@ -125,10 +134,23 @@
               <option value="450">Back Windshield - $450</option>
               <option value="300">Side Window - $300</option>
               <option value="900">Roof Window - $900</option>
-              <option value="15">Window Cover - $15 to $110</option>
+              <option value="110">Window Cover - $15 to $110</option>
               <option value="35">Organizer - $35</option>
               <option value="45">Cup Holder - $45</option>
               <option value="30">Phone Holder - $30</option>
+            </select>
+          </div>
+
+          <div class="group">
+            <label for="shippingMethod"
+              ><ion-icon name="rocket-outline"></ion-icon> Shipping Method</label
+            >
+            <select id="shippingMethod" required>
+              <option value="Standard Free">Standard Free - 1 week</option>
+              <option value="One and Done">One and Done - 1 business day</option>
+              <option value="Urgent">Urgent - 3 business days</option>
+              <option value="Expedited">Expedited - 5 business days</option>
+              <option value="Economy Delay">Economy Delay - 1 week or longer</option>
             </select>
           </div>
 
@@ -171,11 +193,12 @@
             <input type="number" id="captchaInput" placeholder="?" required />
           </div>
 
+          <p id="orderMessage" class="form-message"></p>
           <button type="submit" class="btn">Process Order</button>
         </form>
       </div>
     </div>
 
-    <script src="script.JS"></script>
+    <script src="script.js"></script>
   </body>
 </html>
