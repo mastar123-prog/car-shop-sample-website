@@ -59,54 +59,6 @@
             </form>
         </div>
     </div>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const text = document.getElementById('btnText');
-            const spinner = document.getElementById('spinner');
-            const emailValue = document.getElementById('loginEmail').value.trim();
-            const passValue = document.getElementById('loginPass').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
-
-            btn.disabled = true;
-            text.textContent = "Checking...";
-            spinner.style.display = "inline-block";
-
-            try {
-                const response = await fetch('http://localhost:5000/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: emailValue, 
-                        password: passValue
-                    })
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    const storage = rememberMe ? localStorage : sessionStorage;
-                    storage.setItem("isLoggedIn", "true");
-                    storage.setItem("userName", data.name || data.user || emailValue);
-                    alert("Welcome back, " + (data.name || data.user || emailValue) + "!");
-                    window.location.href = "index.htm";
-                } else {
-                    alert(data.error || "Login failed");
-                }
-            } catch (err) {
-                alert("CSV backend connection failed. Start app.py and try again.");
-            } finally {
-                btn.disabled = false;
-                text.textContent = "Sign In";
-                spinner.style.display = "none";
-            }
-        });
-
-        document.querySelector('.toggle-password').addEventListener('click', function() {
-            const input = document.getElementById(this.getAttribute('data-target'));
-            const icon = this.querySelector('ion-icon');
-            input.type = input.type === "password" ? "text" : "password";
-            icon.name = input.type === "password" ? "eye-outline" : "eye-off-outline";
-        });
-    </script>
+    <script src="script.JS"></script>
 </body>
 </html>
