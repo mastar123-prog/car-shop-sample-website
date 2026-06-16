@@ -2,14 +2,37 @@ async function login() {
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPass').value.trim();
     
-    // Call the async function from database.js
-    const isValid = await validatePassword(email, pass);
+    if (!email || !pass) {
+        alert("Please enter both email and password.");
+        return;
+    }
+    
+    try {
+        const response = await fetch("http://localhost:5000/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: email,
+                username: email,
+                password: pass
+            })
+        });
 
-    if (isValid) {
-        alert("Login Successful! Redirecting...");
-        window.location.href = "index.htm"; 
-    } else {
-        alert("Invalid email or password. Please try again.");
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Login Successful! Redirecting...");
+            // Store user info in session/localStorage if needed
+            localStorage.setItem('currentUser', data.user || email);
+            window.location.href = "index.htm"; 
+        } else {
+            alert(data.error || "Invalid email or password. Please try again.");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("Login failed. Please check that the server is running on port 5000.");
     }
 }
 
@@ -29,29 +52,3 @@ document.querySelectorAll('.toggle-password').forEach(button => {
         }
     });
 });
-
-async function validatePassword(email, password) {
-    try {
-        const response = await fetch("DB.csv");
-        if (!response.ok) throw new Error("Could not find DB.csv");
-        
-        const text = await response.text();
-        // Split rows, skip header, and filter out empty lines
-        const rows = text.split("\n").slice(1).filter(row => row.trim() !== "");
-
-        for (const row of rows) {
-            const columns = row.split(",");
-            // CSV indices: 0:username, 1:name, 2:email, 3:password
-            const csvEmail = columns[2]?.trim();
-            const csvPassword = columns[3]?.trim();
-
-            if (email === csvEmail && password === csvPassword) {
-                return true; // Match found
-            }
-        }
-        return false; // No match found
-    } catch (error) {
-        console.error("Database error:", error);
-        return false;
-    }
-}
