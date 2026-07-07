@@ -1,3 +1,4 @@
+
 async function login() {
     const email = document.getElementById('loginEmail').value.trim();
     const pass = document.getElementById('loginPass').value.trim();
@@ -24,7 +25,6 @@ async function login() {
 
         if (response.ok) {
             alert("Login Successful! Redirecting...");
-            // Store user info in session/localStorage if needed
             localStorage.setItem('currentUser', data.user || email);
             window.location.href = "index.htm"; 
         } else {
@@ -35,6 +35,12 @@ async function login() {
         alert("Login failed. Please check that the server is running on port 5000.");
     }
 }
+
+// Attach login function to form submission
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    login();
+});
 
 // Password Toggle Logic
 document.querySelectorAll('.toggle-password').forEach(button => {
